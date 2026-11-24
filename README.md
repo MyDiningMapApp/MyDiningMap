@@ -36,11 +36,17 @@ npm run typecheck
 npm run lint
 ```
 
+```bash
+npm test
+```
+
 ## Felépítés
 
 - `src/app/` – képernyők (Expo Router: minden fájl egy képernyő)
 - `src/components/` – újrahasználható felületi elemek
-- `src/constants/`, `src/hooks/` – téma, segédfüggvények
+- `src/lib/` – Supabase-kliens, ellenőrző és segédfüggvények (tesztekkel)
+- `src/providers/` – közös állapot (pl. bejelentkezés)
+- `src/constants/`, `src/hooks/` – téma, hookok
 - `.env` – a Supabase-projekt címe és publishable kulcsa (a secret kulcs soha nem kerül ide)
 
 ## Adatbázis (Supabase)

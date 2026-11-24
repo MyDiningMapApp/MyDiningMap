@@ -24,6 +24,9 @@ export const Colors = {
   },
 } as const;
 
+/** Az app fő kiemelőszíne (gombok, aktív elemek). */
+export const Accent = '#E8590C';
+
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 export const Fonts = Platform.select({
