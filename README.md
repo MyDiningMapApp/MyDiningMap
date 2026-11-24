@@ -42,3 +42,9 @@ npm run lint
 - `src/components/` – újrahasználható felületi elemek
 - `src/constants/`, `src/hooks/` – téma, segédfüggvények
 - `.env` – a Supabase-projekt címe és publishable kulcsa (a secret kulcs soha nem kerül ide)
+
+## Adatbázis (Supabase)
+
+Az adatbázis szerkezete a `supabase/migrations/` mappában van, időrendben számozott SQL-fájlokban.
+Új migrációt a Supabase felületén futtatunk le: **SQL Editor → New query**, bemásolod a fájl tartalmát, **Run**.
+Minden fájlt csak egyszer, a sorrendjükben kell lefuttatni.
