@@ -1,0 +1,391 @@
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  View,
+} from 'react-native';
+
+import { Chip, ChipGroup, Segmented } from '@/components/chips';
+import { Button, FormError, TextField } from '@/components/form';
+import { LocationPicker } from '@/components/location-picker';
+import { RatingInput } from '@/components/rating-input';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Accent, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { geocodeAddress, type GeocodeResult } from '@/lib/geocode';
+import {
+  DISTRICTS,
+  PLACE_TYPE_KEYS,
+  PLACE_TYPES,
+  PRICE_LABELS,
+  cuisineOptions,
+  districtHint,
+  draftFromPlace,
+  draftToInput,
+  emptyDraft,
+  fold,
+  type PlaceDraft,
+  type PlaceStatus,
+} from '@/lib/places';
+import { usePlaces } from '@/providers/places-provider';
+
+type Params = { id?: string; status?: PlaceStatus; markVisited?: string };
+
+export default function EditPlaceScreen() {
+  const params = useLocalSearchParams<Params>();
+  const { getPlace, places, createPlace, updatePlace } = usePlaces();
+  const existing = params.id ? getPlace(params.id) : undefined;
+  const theme = useTheme();
+
+  const [draft, setDraft] = useState<PlaceDraft>(() => {
+    if (existing) {
+      const d = draftFromPlace(existing);
+      // „✓ Voltam itt”: a kívánságlistás hely átkerül a kipróbáltak közé.
+      return params.markVisited ? { ...d, status: 'visited' } : d;
+    }
+    return emptyDraft(params.status === 'wishlist' ? 'wishlist' : 'visited');
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [searching, setSearching] = useState(false);
+  const [results, setResults] = useState<GeocodeResult[] | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const set = (patch: Partial<PlaceDraft>) => setDraft((d) => ({ ...d, ...patch }));
+  const visited = draft.status === 'visited';
+
+  const cuisineSuggestions = useMemo(() => {
+    const q = fold(draft.cuisine.trim());
+    return cuisineOptions(places)
+      .filter((c) => !q || (fold(c).includes(q) && fold(c) !== q))
+      .slice(0, 12);
+  }, [places, draft.cuisine]);
+
+  async function searchAddress() {
+    const q = draft.address.trim();
+    if (!q) {
+      setError('Írd be a címet, vagy jelöld ki a helyet a térképen.');
+      return;
+    }
+    setError(null);
+    setSearching(true);
+    try {
+      const found = await geocodeAddress(q);
+      setResults(found);
+    } catch {
+      setResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function applyLocation(r: GeocodeResult) {
+    setResults(null);
+    setDraft((d) => ({
+      ...d,
+      lat: r.lat,
+      lng: r.lng,
+      address: d.address.trim() ? d.address : (r.address ?? d.address),
+      district: r.district ?? districtHint(d.address) ?? d.district,
+    }));
+  }
+
+  async function save() {
+    const result = draftToInput(draft);
+    if ('error' in result) {
+      setError(result.error);
+      return;
+    }
+    setError(null);
+    setSaving(true);
+    try {
+      if (existing) {
+        await updatePlace(existing.id, result.input);
+      } else {
+        await createPlace(result.input);
+      }
+      router.back();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const title = existing ? (params.markVisited ? 'Voltam itt!' : 'Hely szerkesztése') : 'Új hely';
+
+  return (
+    <ThemedView style={styles.flex}>
+      <Stack.Screen
+        options={{
+          title,
+          headerLeft: () => (
+            <Pressable onPress={() => router.back()} hitSlop={12}>
+              <ThemedText style={{ color: Accent }}>Mégse</ThemedText>
+            </Pressable>
+          ),
+          headerRight: () =>
+            saving ? (
+              <ActivityIndicator />
+            ) : (
+              <Pressable onPress={save} hitSlop={12}>
+                <ThemedText style={{ color: Accent, fontWeight: 600 }}>Mentés</ThemedText>
+              </Pressable>
+            ),
+        }}
+      />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <Segmented<PlaceStatus>
+            options={[
+              { value: 'visited', label: '✓ Kipróbáltam' },
+              { value: 'wishlist', label: '♡ Kívánságlista' },
+            ]}
+            value={draft.status}
+            onChange={(v) => set({ status: v })}
+          />
+
+          <TextField
+            label="Név *"
+            value={draft.name}
+            onChangeText={(t) => set({ name: t })}
+            placeholder="pl. Mori Ramen"
+            autoFocus={!existing}
+          />
+
+          <Section label="Típus">
+            <ChipGroup
+              options={PLACE_TYPE_KEYS.map((k) => ({
+                value: k,
+                label: `${PLACE_TYPES[k].icon} ${PLACE_TYPES[k].label}`,
+              }))}
+              value={draft.type}
+              onChange={(v) => set({ type: v })}
+            />
+          </Section>
+
+          <Section label="Helyszín">
+            <View style={styles.inline}>
+              <View style={styles.flex}>
+                <TextField
+                  label="Cím"
+                  value={draft.address}
+                  onChangeText={(t) => {
+                    const district = districtHint(t);
+                    set(district ? { address: t, district } : { address: t });
+                  }}
+                  placeholder="pl. Akácfa utca 55, 1073"
+                  returnKeyType="search"
+                  onSubmitEditing={searchAddress}
+                />
+              </View>
+            </View>
+            <View style={styles.inline}>
+              <View style={styles.flex}>
+                <Button
+                  title="🔍 Cím keresése"
+                  variant="secondary"
+                  onPress={searchAddress}
+                  loading={searching}
+                />
+              </View>
+              <View style={styles.flex}>
+                <Button
+                  title="📍 Térképen"
+                  variant="secondary"
+                  onPress={() => {
+                    setResults(null);
+                    setPickerOpen(true);
+                  }}
+                />
+              </View>
+            </View>
+
+            {results ? (
+              <View style={[styles.results, { backgroundColor: theme.backgroundElement }]}>
+                {results.length === 0 ? (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Nincs találat. Próbáld pontosabban, vagy jelöld ki a térképen.
+                  </ThemedText>
+                ) : (
+                  <>
+                    {results.map((r, i) => {
+                      const hint = districtHint(draft.address);
+                      const mismatch = !!hint && !!r.district && r.district !== hint;
+                      return (
+                        <Pressable key={`${r.lat},${r.lng},${i}`} onPress={() => applyLocation(r)}>
+                          <ThemedText type="small">📍 {r.label}</ThemedText>
+                          {mismatch ? (
+                            <ThemedText type="small" style={styles.warning}>
+                              ⚠️ Ez nem a megadott kerületben ({hint}.) van.
+                            </ThemedText>
+                          ) : null}
+                        </Pressable>
+                      );
+                    })}
+                    <ThemedText type="small" themeColor="textSecondary">
+                      Nem ez az? Budapesten sok azonos nevű utca van: írd a címhez az irányítószámot
+                      (pl. 1073) vagy a kerületet (pl. VII. ker.), vagy jelöld ki a térképen.
+                    </ThemedText>
+                  </>
+                )}
+              </View>
+            ) : null}
+
+            <ThemedText type="small" themeColor="textSecondary">
+              {draft.lat != null
+                ? '✓ Helyszín megadva, megjelenik a térképen.'
+                : 'Még nincs helyszín: keresd meg a címet, vagy jelöld ki a térképen.'}
+            </ThemedText>
+          </Section>
+
+          <Section label={`Kerület${draft.district ? `: ${draft.district}.` : ''}`}>
+            <ChipGroup<string | null>
+              scroll
+              allowDeselect
+              emptyValue={null}
+              options={DISTRICTS.map((d) => ({ value: d, label: d }))}
+              value={draft.district}
+              onChange={(v) => set({ district: v })}
+            />
+          </Section>
+
+          <View>
+            <TextField
+              label="Konyha / kínálat"
+              value={draft.cuisine}
+              onChangeText={(t) => set({ cuisine: t })}
+              placeholder="pl. japán, olasz, kovászos kenyér"
+              autoCapitalize="none"
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.suggestions}
+              keyboardShouldPersistTaps="handled">
+              {cuisineSuggestions.map((c) => (
+                <Chip key={c} label={c} onPress={() => set({ cuisine: c })} />
+              ))}
+            </ScrollView>
+          </View>
+
+          <Section label="Árszint">
+            <ChipGroup<number | null>
+              allowDeselect
+              emptyValue={null}
+              options={[1, 2, 3, 4].map((n) => ({ value: n, label: PRICE_LABELS[n] }))}
+              value={draft.price}
+              onChange={(v) => set({ price: v })}
+            />
+          </Section>
+
+          {visited ? (
+            <>
+              <Section label={`Értékelés${draft.rating ? `: ${draft.rating}/10` : ''}`}>
+                <RatingInput value={draft.rating} onChange={(v) => set({ rating: v })} />
+              </Section>
+              <View style={styles.switchRow}>
+                <ThemedText>Visszamennék</ThemedText>
+                <Switch
+                  value={draft.wouldReturn}
+                  onValueChange={(v) => set({ wouldReturn: v })}
+                  trackColor={{ true: Accent }}
+                />
+              </View>
+            </>
+          ) : null}
+
+          <TextField
+            label="Jegyzet"
+            value={draft.notes}
+            onChangeText={(t) => set({ notes: t })}
+            placeholder="Mit ettél, mi volt jó, kivel mennél…"
+            multiline
+            style={styles.notes}
+          />
+
+          <TextField
+            label="Link"
+            value={draft.url}
+            onChangeText={(t) => set({ url: t })}
+            placeholder="pl. Google Maps vagy weboldal"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+
+          <FormError message={error} />
+          <Button title="Mentés" onPress={save} loading={saving} />
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      <LocationPicker
+        visible={pickerOpen}
+        initial={draft.lat != null && draft.lng != null ? { lat: draft.lat, lng: draft.lng } : null}
+        onCancel={() => setPickerOpen(false)}
+        onConfirm={(r) => {
+          setPickerOpen(false);
+          applyLocation(r);
+        }}
+      />
+    </ThemedView>
+  );
+}
+
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <View style={styles.section}>
+      <ThemedText type="smallBold">{label}</ThemedText>
+      {children}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
+  content: {
+    gap: Spacing.four,
+    padding: Spacing.three,
+    paddingBottom: Spacing.six,
+  },
+  section: {
+    gap: Spacing.two,
+  },
+  inline: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  results: {
+    gap: Spacing.three,
+    padding: Spacing.three,
+    borderRadius: 12,
+  },
+  suggestions: {
+    gap: Spacing.two,
+    paddingTop: Spacing.two,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  warning: {
+    color: '#B26A00',
+  },
+  notes: {
+    minHeight: 90,
+    textAlignVertical: 'top',
+  },
+});
