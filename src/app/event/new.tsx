@@ -75,7 +75,10 @@ export default function NewEventScreen() {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled">
           <TextField
             label="Cím *"
             value={title}

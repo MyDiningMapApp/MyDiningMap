@@ -179,6 +179,7 @@ export default function EventScreen() {
     <ThemedView style={styles.flex}>
       <Stack.Screen options={{ title: '' }} />
       <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         refreshControl={
@@ -566,11 +567,13 @@ function OptionCard({
             label={option.my_vote ? '✓ Szavaztam' : 'Szavazok'}
             selected={option.my_vote}
             onPress={onVote}
+            onCard
           />
           {organizer && (chosen || !hasChosen) ? (
             <Chip
               label={chosen ? 'Kiválasztás visszavonása' : 'Ezt választom'}
               onPress={onChoose}
+              onCard
             />
           ) : null}
           {busy === `vote-${option.id}` || busy === `choose-${option.id}` ? (

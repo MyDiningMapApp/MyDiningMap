@@ -76,7 +76,10 @@ export default function ProfileScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.flex} edges={[]}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <Avatar name={profile.display_name || profile.username || '?'} size={72} />
             <ThemedText type="subtitle" style={styles.center}>

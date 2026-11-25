@@ -24,7 +24,7 @@ export function PlaceDetails({ place, photos = [], subtitle, actions }: Props) {
   const visited = place.status === 'visited';
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <ThemedText style={styles.icon}>{type.icon}</ThemedText>
         <ThemedText type="subtitle" style={styles.center}>

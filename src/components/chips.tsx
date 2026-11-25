@@ -8,9 +8,11 @@ type ChipProps = {
   label: string;
   selected?: boolean;
   onPress: () => void;
+  /** Kártyán belül (szürke háttéren) használva, hogy a gomb látszódjon. */
+  onCard?: boolean;
 };
 
-export function Chip({ label, selected, onPress }: ChipProps) {
+export function Chip({ label, selected, onPress, onCard }: ChipProps) {
   const theme = useTheme();
   return (
     <Pressable
@@ -19,7 +21,13 @@ export function Chip({ label, selected, onPress }: ChipProps) {
       onPress={onPress}
       style={({ pressed }) => [
         styles.chip,
-        { backgroundColor: selected ? Accent : theme.backgroundElement },
+        {
+          backgroundColor: selected
+            ? Accent
+            : onCard
+              ? theme.backgroundSelected
+              : theme.backgroundElement,
+        },
         pressed && styles.pressed,
       ]}>
       <ThemedText type="small" style={{ color: selected ? '#ffffff' : theme.text }}>

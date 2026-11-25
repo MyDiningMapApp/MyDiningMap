@@ -209,7 +209,10 @@ export default function EditPlaceScreen() {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled">
           <Segmented<PlaceStatus>
             options={[
               { value: 'visited', label: '✓ Kipróbáltam' },

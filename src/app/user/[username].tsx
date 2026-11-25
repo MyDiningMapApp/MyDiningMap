@@ -144,6 +144,7 @@ export default function UserProfileScreen() {
     <ThemedView style={styles.flex}>
       <Stack.Screen options={{ title: `@${profile.username}` }} />
       <FlatList
+        contentInsetAdjustmentBehavior="automatic"
         data={viewable ? visible : []}
         keyExtractor={(p) => p.id}
         renderItem={({ item }) => (
