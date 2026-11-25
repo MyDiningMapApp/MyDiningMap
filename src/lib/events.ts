@@ -17,7 +17,11 @@ export type EventSummary = {
   my_response: EventResponse | null;
   chosen_place: string | null;
   option_count: number;
+  /** Válaszok a meghívottak között (a szervező nélkül). */
   going_count: number;
+  maybe_count: number;
+  declined_count: number;
+  pending_count: number;
   invitee_count: number;
   has_suggestions: boolean;
 };
@@ -219,6 +223,23 @@ export function defaultEventTime(now: Date = new Date()): Date {
 /** A javasolt helyek sorrendje: a legtöbb szavazatot kapott elöl. */
 export function sortOptions(options: EventOption[]): EventOption[] {
   return [...options].sort((a, b) => b.votes - a.votes);
+}
+
+/**
+ * Válasz-összesítő a lista kártyájára, pl. „✅ 2 · 🤔 1 · ❌ 0 · ⏳ 1”.
+ * A szervező mindig jön, ezért a ✅ számban ő is benne van.
+ */
+export function responseSummary(
+  e: Pick<EventSummary, 'going_count' | 'maybe_count' | 'declined_count' | 'pending_count'>,
+): string {
+  // A régebbi adatbázis-függvény még nem adja vissza az összes számot: ilyenkor 0.
+  const n = (v: number | undefined) => v ?? 0;
+  return [
+    `${RESPONSE_ICONS.going} ${n(e.going_count) + 1}`,
+    `${RESPONSE_ICONS.maybe} ${n(e.maybe_count)}`,
+    `${RESPONSE_ICONS.declined} ${n(e.declined_count)}`,
+    `${RESPONSE_ICONS.pending} ${n(e.pending_count)}`,
+  ].join(' · ');
 }
 
 /** Rövid állapotszöveg a listához. */

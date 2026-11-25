@@ -5,6 +5,7 @@ import {
   eventPlaceSummary,
   formatEventTime,
   pendingInviteCount,
+  responseSummary,
   sortOptions,
   splitEvents,
   type EventOption,
@@ -27,6 +28,9 @@ const ev = (over: Partial<EventSummary>): EventSummary => ({
   chosen_place: null,
   option_count: 2,
   going_count: 0,
+  maybe_count: 0,
+  declined_count: 0,
+  pending_count: 1,
   invitee_count: 1,
   has_suggestions: false,
   ...over,
@@ -95,5 +99,16 @@ describe('sortOptions és eventPlaceSummary', () => {
   it('kiválasztott hely vagy szavazás', () => {
     expect(eventPlaceSummary({ chosen_place: 'Mori Ramen', option_count: 3 })).toBe('📍 Mori Ramen');
     expect(eventPlaceSummary({ chosen_place: null, option_count: 3 })).toBe('🗳️ Szavazás: 3 hely');
+  });
+});
+
+describe('responseSummary', () => {
+  it('a szervezőt is jövőként számolja', () => {
+    expect(
+      responseSummary({ going_count: 1, maybe_count: 1, declined_count: 0, pending_count: 2 }),
+    ).toBe('✅ 2 · 🤔 1 · ❌ 0 · ⏳ 2');
+    expect(
+      responseSummary({ going_count: 0, maybe_count: 0, declined_count: 0, pending_count: 1 }),
+    ).toBe('✅ 1 · 🤔 0 · ❌ 0 · ⏳ 1');
   });
 });

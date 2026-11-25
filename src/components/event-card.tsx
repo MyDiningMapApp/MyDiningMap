@@ -8,6 +8,7 @@ import {
   formatEventTime,
   RESPONSE_ICONS,
   RESPONSE_LABELS,
+  responseSummary,
   type EventSummary,
 } from '@/lib/events';
 
@@ -44,17 +45,26 @@ export function EventCard({ event, onPress }: { event: EventSummary; onPress: ()
       <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
         {eventPlaceSummary(event)}
       </ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        {cancelled
-          ? '🚫 Lemondva'
-          : event.is_organizer
-            ? `${event.going_count}/${event.invitee_count} jön${event.has_suggestions ? ' · ⏰ új időpont-javaslat' : ''}`
-            : `${organizer} szervezi · ${RESPONSE_ICONS[event.my_response ?? 'pending']} ${
-                needsAnswer
-                  ? 'Válaszolj!'
-                  : `Válaszod: ${RESPONSE_LABELS[event.my_response ?? 'pending']}`
-              }`}
-      </ThemedText>
+      {cancelled ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          🚫 Lemondva
+        </ThemedText>
+      ) : (
+        <>
+          <ThemedText type="small" themeColor="textSecondary">
+            {event.is_organizer
+              ? `Te szervezed${event.has_suggestions ? ' · ⏰ új időpont-javaslat' : ''}`
+              : `${organizer} szervezi · ${RESPONSE_ICONS[event.my_response ?? 'pending']} ${
+                  needsAnswer
+                    ? 'Válaszolj!'
+                    : `Válaszod: ${RESPONSE_LABELS[event.my_response ?? 'pending']}`
+                }`}
+          </ThemedText>
+          <ThemedText type="small" accessibilityLabel="Válaszok összesítve">
+            {responseSummary(event)}
+          </ThemedText>
+        </>
+      )}
     </Pressable>
   );
 }

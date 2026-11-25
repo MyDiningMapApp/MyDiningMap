@@ -339,7 +339,7 @@ export default function EventScreen() {
         {/* Résztvevők */}
         <Section
           title={`Résztvevők (${ev.invitees.filter((i) => i.response === 'going').length + 1} jön)`}>
-          <PersonRow name={displayName(ev.organizer)} status="Szervező" />
+          <PersonRow name={displayName(ev.organizer)} status="✅ Jön · Szervező" />
           {ev.invitees.map((i) => (
             <View key={i.id} style={[styles.person, { backgroundColor: theme.backgroundElement }]}>
               <View style={styles.personMain}>
