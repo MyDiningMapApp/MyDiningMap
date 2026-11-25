@@ -26,6 +26,9 @@ export default function AppTabs() {
           <TabTrigger name="places" href="/places" asChild>
             <TabButton>Helyek</TabButton>
           </TabTrigger>
+          <TabTrigger name="friends" href="/friends" asChild>
+            <TabButton>Barátok</TabButton>
+          </TabTrigger>
           <TabTrigger name="profile" href="/profile" asChild>
             <TabButton>Profil</TabButton>
           </TabTrigger>

@@ -13,6 +13,13 @@ megnézhetik a barátaik listáit, és közös programot szervezhetnek.
 - Térkép- és listanézet, keresés, szűrés típusra és konyhára, „csak ahová visszamennék”.
 - Csak Budapest, egyelőre.
 
+### Fotók
+- Helyenként **legfeljebb 6 fotó**, a galériából (felvételkor és utólag szerkesztéskor is).
+- Feltöltés előtt kicsinyítés (kb. 1600 px, JPEG) és külön bélyegkép (320 px).
+- A listában az első fotó bélyegképe látszik, az adatlapon fotósáv, koppintásra teljes képernyős nézegető.
+- Privát Supabase-tároló (`place-photos`), aláírt linkekkel; ugyanazok látják, akik a helyet is
+  (tulajdonos, barátok, publikus profilnál bárki). A hely törlésekor a fotói is törlődnek.
+
 ### Profil és láthatóság
 - Minden felhasználónak van egyedi **felhasználóneve** (pl. `@marcell`), megjelenített neve és profilképe.
 - A profil láthatósága **privát** vagy **publikus**, bármikor átállítható.
@@ -27,7 +34,12 @@ megnézhetik a barátaik listáit, és közös programot szervezhetnek.
 ### Keresés és barátok
 - Profilt csak a **pontos felhasználónévre** lehet megtalálni, kis- és nagybetűtől függetlenül. Ez publikus és privát profilra is így működik.
 - Barátnak jelölés, majd a másik fél elfogadja vagy elutasítja. Utána kölcsönösen látják egymás listáit.
-- A barátság bármikor megszüntethető.
+  Ha ketten egymást jelölik, automatikusan barátok lesznek.
+- A barátság bármikor megszüntethető, az elküldött jelölés visszavonható.
+- Külön **Barátok** fül: keresés, bejövő és elküldött jelölések, barátlista.
+- Más felhasználó helyei a profiljánál látszanak, **listában** (térképnézet ott nincs). A **fő Térkép fülön csak a saját helyek** jelennek meg.
+- Más felhasználó helyei csak adatbázis-függvényen át olvashatók (`get_profile_places`), így a publikus
+  profilok helyei sem kérhetők le tömegesen.
 
 ### Események
 - Eseményre **csak barátot** lehet meghívni. Publikus profilú, de nem barát felhasználót nem.
@@ -39,6 +51,8 @@ megnézhetik a barátaik listáit, és közös programot szervezhetnek.
 - A szervező módosíthatja vagy lemondhatja az eseményt.
 
 ### Push-értesítések
+Külön lépésben, az események után (saját fejlesztői build és Apple Developer fiók kell hozzá).
+Addig az appon belül számláló jelzi az új barátjelöléseket.
 - Valaki barátnak jelöl.
 - Meghívást kapsz egy eseményre.
 - (Javaslat, később: valaki elfogadta a barátkérésedet, másik időpontot javasoltak, megváltozott vagy lemondták az eseményt.)
@@ -90,9 +104,9 @@ Minden szakasz végén kipróbálható verzió lesz a telefonon.
 
 1. **Alapok:** projektváz, Supabase-beállítás, belépés, profil és felhasználónév, helyek felvétele/szerkesztése/törlése,
    térkép és lista, kívánságlista, szűrők, a korábbi webapp 46 helyének áttöltése.
-2. **Közösségi rész:** láthatóság, felhasználónév-keresés, barátjelölés, barátok és publikus profilok listáinak megtekintése,
-   push a barátkérésről.
-3. **Események:** létrehozás, meghívás, helyszavazás, visszajelzés, időpont-javaslat, push a meghívóról.
+2. **Közösségi rész:** láthatóság, felhasználónév-keresés, barátjelölés, barátok és publikus profilok listáinak megtekintése.
+3. **Események:** létrehozás, meghívás, helyszavazás, visszajelzés, időpont-javaslat.
+3b. **Push-értesítések** (barátjelölés, eseménymeghívó) – fejlesztői build, Apple Developer fiók.
 4. **Kiadás:** ikon, indítóképernyő, adatvédelmi tájékoztató, fióktörlés, TestFlight, App Store-beküldés.
 
 ## 6. Amire szükség lesz tőled

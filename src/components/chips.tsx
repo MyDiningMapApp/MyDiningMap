@@ -74,13 +74,19 @@ type SegmentedProps<T> = {
   options: Option<T>[];
   value: T;
   onChange: (value: T) => void;
+  /** Kártyán belül (szürke háttéren) használva. */
+  onCard?: boolean;
 };
 
 /** iOS-szerű szegmentált váltó. */
-export function Segmented<T>({ options, value, onChange }: SegmentedProps<T>) {
+export function Segmented<T>({ options, value, onChange, onCard }: SegmentedProps<T>) {
   const theme = useTheme();
   return (
-    <View style={[styles.segmented, { backgroundColor: theme.backgroundElement }]}>
+    <View
+      style={[
+        styles.segmented,
+        { backgroundColor: onCard ? theme.backgroundSelected : theme.backgroundElement },
+      ]}>
       {options.map((o) => {
         const selected = o.value === value;
         return (

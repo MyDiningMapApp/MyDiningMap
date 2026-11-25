@@ -10,6 +10,8 @@ import { TabHeader } from '@/components/tab-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Accent, BottomTabInset, Spacing } from '@/constants/theme';
+import { useSignedUrls } from '@/hooks/use-signed-urls';
+import { firstThumbPaths } from '@/lib/photos';
 import {
   EMPTY_FILTERS,
   PLACE_TYPE_KEYS,
@@ -23,7 +25,9 @@ import {
 import { usePlaces } from '@/providers/places-provider';
 
 export default function PlacesScreen() {
-  const { places, loading, error, reload } = usePlaces();
+  const { places, loading, error, reload, photosByPlace } = usePlaces();
+  const thumbPaths = useMemo(() => firstThumbPaths(photosByPlace), [photosByPlace]);
+  const thumbUrls = useSignedUrls(Object.values(thumbPaths));
   const [filters, setFilters] = useState<PlaceFilters>(EMPTY_FILTERS);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -64,7 +68,12 @@ export default function PlacesScreen() {
           data={visible}
           keyExtractor={(p) => p.id}
           renderItem={({ item }) => (
-            <PlaceRow place={item} onPress={() => router.push(`/place/${item.id}`)} />
+            <PlaceRow
+              place={item}
+              onPress={() => router.push(`/place/${item.id}`)}
+              hasPhoto={!!thumbPaths[item.id]}
+              thumbUri={thumbPaths[item.id] ? thumbUrls[thumbPaths[item.id]] : undefined}
+            />
           )}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"

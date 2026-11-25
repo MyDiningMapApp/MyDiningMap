@@ -1,3 +1,4 @@
+import * as ImagePicker from 'expo-image-picker';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
@@ -14,12 +15,16 @@ import {
 import { Chip, ChipGroup, Segmented } from '@/components/chips';
 import { Button, FormError, TextField } from '@/components/form';
 import { LocationPicker } from '@/components/location-picker';
+import { PhotoStrip } from '@/components/photo-strip';
 import { RatingInput } from '@/components/rating-input';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Accent, Spacing } from '@/constants/theme';
+import { useSignedUrls } from '@/hooks/use-signed-urls';
 import { useTheme } from '@/hooks/use-theme';
+import { showError } from '@/lib/confirm';
 import { geocodeAddress, type GeocodeResult } from '@/lib/geocode';
+import { MAX_PHOTOS, remainingSlots, type LocalPhoto } from '@/lib/photos';
 import {
   DISTRICTS,
   PLACE_TYPE_KEYS,
@@ -40,7 +45,8 @@ type Params = { id?: string; status?: PlaceStatus; markVisited?: string };
 
 export default function EditPlaceScreen() {
   const params = useLocalSearchParams<Params>();
-  const { getPlace, places, createPlace, updatePlace } = usePlaces();
+  const { getPlace, places, createPlace, updatePlace, photosByPlace, addPhotos, removePhotos } =
+    usePlaces();
   const existing = params.id ? getPlace(params.id) : undefined;
   const theme = useTheme();
 
@@ -53,6 +59,17 @@ export default function EditPlaceScreen() {
     return emptyDraft(params.status === 'wishlist' ? 'wishlist' : 'visited');
   });
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+
+  // Fotók: a már feltöltöttek (a törlésre jelöltek nélkül) és az újonnan kiválasztottak.
+  const [pendingPhotos, setPendingPhotos] = useState<LocalPhoto[]>([]);
+  const [removedIds, setRemovedIds] = useState<string[]>([]);
+  const savedPhotos = useMemo(
+    () => (existing ? (photosByPlace[existing.id] ?? []) : []).filter((p) => !removedIds.includes(p.id)),
+    [existing, photosByPlace, removedIds],
+  );
+  const savedThumbs = useSignedUrls(savedPhotos.map((p) => p.thumb_path));
+  const freeSlots = remainingSlots(savedPhotos.length, pendingPhotos.length);
   const [error, setError] = useState<string | null>(null);
 
   const [searching, setSearching] = useState(false);
@@ -98,6 +115,33 @@ export default function EditPlaceScreen() {
     }));
   }
 
+  async function pickPhotos() {
+    if (freeSlots === 0) return;
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: freeSlots,
+      orderedSelection: true,
+      quality: 1,
+    });
+    if (res.canceled) return;
+    const picked = res.assets.slice(0, freeSlots).map((a, i) => ({
+      key: `${a.assetId ?? a.uri}-${Date.now()}-${i}`,
+      uri: a.uri,
+      width: a.width,
+      height: a.height,
+    }));
+    setPendingPhotos((list) => [...list, ...picked]);
+  }
+
+  function removePhoto(key: string) {
+    if (pendingPhotos.some((p) => p.key === key)) {
+      setPendingPhotos((list) => list.filter((p) => p.key !== key));
+    } else {
+      setRemovedIds((ids) => [...ids, key]);
+    }
+  }
+
   async function save() {
     const result = draftToInput(draft);
     if ('error' in result) {
@@ -106,18 +150,38 @@ export default function EditPlaceScreen() {
     }
     setError(null);
     setSaving(true);
+    let placeId: string;
     try {
-      if (existing) {
-        await updatePlace(existing.id, result.input);
-      } else {
-        await createPlace(result.input);
-      }
-      router.back();
+      placeId = existing
+        ? (await updatePlace(existing.id, result.input)).id
+        : (await createPlace(result.input)).id;
     } catch (e) {
       setError((e as Error).message);
+      setSaving(false);
+      return;
+    }
+
+    // A hely már el van mentve; a fotókkal kapcsolatos hiba ezt nem vonja vissza.
+    try {
+      const toRemove = (existing ? (photosByPlace[existing.id] ?? []) : []).filter((p) =>
+        removedIds.includes(p.id),
+      );
+      if (toRemove.length > 0) {
+        setProgress('Fotók törlése…');
+        await removePhotos(toRemove);
+      }
+      if (pendingPhotos.length > 0) {
+        await addPhotos(placeId, pendingPhotos, (done, total) =>
+          setProgress(`Fotók feltöltése: ${Math.min(done + 1, total)}/${total}…`),
+        );
+      }
+    } catch (e) {
+      showError(`A hely elmentve, de a fotóknál hiba történt: ${(e as Error).message}`);
     } finally {
+      setProgress(null);
       setSaving(false);
     }
+    router.back();
   }
 
   const title = existing ? (params.markVisited ? 'Voltam itt!' : 'Hely szerkesztése') : 'Új hely';
@@ -324,7 +388,29 @@ export default function EditPlaceScreen() {
             keyboardType="url"
           />
 
+          <Section label={`Fotók (${savedPhotos.length + pendingPhotos.length}/${MAX_PHOTOS})`}>
+            <PhotoStrip
+              items={[
+                ...savedPhotos.map((p) => ({ key: p.id, uri: savedThumbs[p.thumb_path] })),
+                ...pendingPhotos.map((p) => ({ key: p.key, uri: p.uri })),
+              ]}
+              onRemove={saving ? undefined : removePhoto}
+              onAdd={freeSlots > 0 && !saving ? pickPhotos : undefined}
+              addLabel="Galéria"
+            />
+            {pendingPhotos.length > 0 ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                Az új fotók mentéskor töltődnek fel.
+              </ThemedText>
+            ) : null}
+          </Section>
+
           <FormError message={error} />
+          {progress ? (
+            <ThemedText type="small" themeColor="textSecondary" style={styles.progress}>
+              {progress}
+            </ThemedText>
+          ) : null}
           <Button title="Mentés" onPress={save} loading={saving} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -383,6 +469,9 @@ const styles = StyleSheet.create({
   },
   warning: {
     color: '#B26A00',
+  },
+  progress: {
+    textAlign: 'center',
   },
   notes: {
     minHeight: 90,

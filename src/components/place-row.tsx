@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { RatingBadge } from '@/components/rating-input';
@@ -6,7 +7,16 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { PLACE_TYPES, PRICE_LABELS, type Place } from '@/lib/places';
 
-export function PlaceRow({ place, onPress }: { place: Place; onPress: () => void }) {
+type Props = {
+  place: Place;
+  onPress: () => void;
+  /** Az első fotó bélyegképe; ha nincs, a típus ikonja látszik. */
+  thumbUri?: string;
+  /** Igaz, ha van fotó, de a link még töltődik (helyfoglaló jelenik meg). */
+  hasPhoto?: boolean;
+};
+
+export function PlaceRow({ place, onPress, thumbUri, hasPhoto }: Props) {
   const theme = useTheme();
   const meta = [
     PLACE_TYPES[place.type].label,
@@ -25,7 +35,17 @@ export function PlaceRow({ place, onPress }: { place: Place; onPress: () => void
         { backgroundColor: theme.backgroundElement },
         pressed && styles.pressed,
       ]}>
-      <ThemedText style={styles.icon}>{PLACE_TYPES[place.type].icon}</ThemedText>
+      {thumbUri || hasPhoto ? (
+        <View style={[styles.thumb, { backgroundColor: theme.backgroundSelected }]}>
+          {thumbUri ? (
+            <Image source={{ uri: thumbUri }} style={styles.thumbImage} contentFit="cover" transition={150} />
+          ) : null}
+        </View>
+      ) : (
+        <View style={styles.thumb}>
+          <ThemedText style={styles.icon}>{PLACE_TYPES[place.type].icon}</ThemedText>
+        </View>
+      )}
       <View style={styles.body}>
         <View style={styles.titleRow}>
           <ThemedText type="smallBold" style={styles.name} numberOfLines={1}>
@@ -67,6 +87,18 @@ const styles = StyleSheet.create({
   icon: {
     fontSize: 26,
     lineHeight: 32,
+  },
+  thumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thumbImage: {
+    width: '100%',
+    height: '100%',
   },
   body: {
     flex: 1,

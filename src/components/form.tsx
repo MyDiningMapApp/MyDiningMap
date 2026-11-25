@@ -14,9 +14,11 @@ import { useTheme } from '@/hooks/use-theme';
 type TextFieldProps = TextInputProps & {
   label: string;
   error?: string | null;
+  /** Kártyán belül (szürke háttéren) a mező az oldal hátterének színét kapja, hogy látszódjon. */
+  onCard?: boolean;
 };
 
-export function TextField({ label, error, style, ...rest }: TextFieldProps) {
+export function TextField({ label, error, onCard, style, ...rest }: TextFieldProps) {
   const theme = useTheme();
   return (
     <View style={styles.field}>
@@ -25,7 +27,10 @@ export function TextField({ label, error, style, ...rest }: TextFieldProps) {
         placeholderTextColor={theme.textSecondary}
         style={[
           styles.input,
-          { color: theme.text, backgroundColor: theme.backgroundElement },
+          {
+            color: theme.text,
+            backgroundColor: onCard ? theme.background : theme.backgroundElement,
+          },
           error ? styles.inputError : null,
           style,
         ]}
