@@ -43,12 +43,20 @@ megnézhetik a barátaik listáit, és közös programot szervezhetnek.
 
 ### Események
 - Eseményre **csak barátot** lehet meghívni. Publikus profilú, de nem barát felhasználót nem.
-- A szervező **egy időpontot** ad meg, és **egy vagy több helyet** javasol.
-- A hely bármi lehet: valakinek a listájáról vagy teljesen új hely címkereséssel.
-- Ha több hely van, a meghívottak (és a szervező) **szavaznak**, a végső helyet a szervező választja ki.
+- A szervező **egy időpontot** ad meg, és **egy vagy több helyet** javasol (helyet csak a szervező adhat hozzá).
+- A hely bármi lehet: a saját listáról, egy barát listájáról vagy teljesen új hely címkereséssel / térképen.
+- Ha több hely van, a résztvevők (és a szervező) **szavaznak, többre is**; a végső helyet a szervező választja ki.
+  Egyetlen javasolt hely automatikusan ki van választva.
 - A meghívottak visszajelzése: jövök / talán / nem jövök.
-- Ha az időpont nem jó, a meghívott **másik időpontot javasolhat**. A szervező dönti el, hogy módosítja-e.
-- A szervező módosíthatja vagy lemondhatja az eseményt.
+- Ha az időpont nem jó, a meghívott **másik időpontot javasolhat**; a szervező egy koppintással elfogadhatja.
+- Ha a szervező módosítja az időpontot, a **válaszok nullázódnak**.
+- A szervező módosíthatja, további barátokat hívhat meg, helyet adhat hozzá/törölhet, lemondhatja az eseményt.
+
+### Navigáció
+- Alsó fülek: **Térkép · Helyek · Barátok · Események**.
+- A **profil** a fülek bal felső sarkában lévő profilgombbal nyílik.
+- Jobb felső sarok: Térkép és Helyek fülön „＋ Új hely”, Barátok és Események fülön „＋ Új esemény”.
+- Számláló: a Barátok fülön az új jelölések, az Események fülön a megválaszolatlan meghívók száma.
 
 ### Push-értesítések
 Külön lépésben, az események után (saját fejlesztői build és Apple Developer fiók kell hozzá).

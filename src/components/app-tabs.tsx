@@ -2,12 +2,14 @@ import { NativeTabs } from 'expo-router/native-tabs';
 import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { useEvents } from '@/providers/events-provider';
 import { useFriends } from '@/providers/friends-provider';
 
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const { incoming } = useFriends();
+  const { pendingCount } = useEvents();
 
   return (
     <NativeTabs
@@ -32,12 +34,12 @@ export default function AppTabs() {
         ) : null}
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>Profil</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf={{ default: 'person.crop.circle', selected: 'person.crop.circle.fill' }}
-          md="person"
-        />
+      <NativeTabs.Trigger name="events">
+        <NativeTabs.Trigger.Label>Események</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'calendar', selected: 'calendar' }} md="event" />
+        {pendingCount > 0 ? (
+          <NativeTabs.Trigger.Badge>{String(pendingCount)}</NativeTabs.Trigger.Badge>
+        ) : null}
       </NativeTabs.Trigger>
     </NativeTabs>
   );

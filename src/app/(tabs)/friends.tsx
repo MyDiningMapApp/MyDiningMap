@@ -49,7 +49,11 @@ export default function FriendsScreen() {
   return (
     <ThemedView style={styles.flex}>
       <SafeAreaView style={styles.flex} edges={['top']}>
-        <TabHeader title="Barátok" />
+        <TabHeader
+          actionLabel="＋ Új esemény"
+          actionAccessibilityLabel="Új esemény létrehozása"
+          onAction={() => router.push('/event/new')}
+        />
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"

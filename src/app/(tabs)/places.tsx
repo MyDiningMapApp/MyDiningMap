@@ -61,8 +61,9 @@ export default function PlacesScreen() {
     <ThemedView style={styles.flex}>
       <SafeAreaView style={styles.flex} edges={['top']}>
         <TabHeader
-          title="Helyek"
-          onAdd={() => router.push({ pathname: '/place/edit', params: { status } })}
+          actionLabel="＋ Új hely"
+          actionAccessibilityLabel="Új hely felvétele"
+          onAction={() => router.push({ pathname: '/place/edit', params: { status } })}
         />
         <FlatList
           data={visible}

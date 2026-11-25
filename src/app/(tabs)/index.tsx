@@ -23,8 +23,9 @@ export default function MapScreen() {
     <ThemedView style={styles.flex}>
       <SafeAreaView style={styles.flex} edges={['top']}>
         <TabHeader
-          title="Térkép"
-          onAdd={() =>
+          actionLabel="＋ Új hely"
+          actionAccessibilityLabel="Új hely felvétele"
+          onAction={() =>
             router.push({
               pathname: '/place/edit',
               params: { status: status === 'all' ? 'visited' : status },

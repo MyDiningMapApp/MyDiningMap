@@ -29,8 +29,8 @@ export default function AppTabs() {
           <TabTrigger name="friends" href="/friends" asChild>
             <TabButton>Barátok</TabButton>
           </TabTrigger>
-          <TabTrigger name="profile" href="/profile" asChild>
-            <TabButton>Profil</TabButton>
+          <TabTrigger name="events" href="/events" asChild>
+            <TabButton>Események</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>

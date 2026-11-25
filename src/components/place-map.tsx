@@ -67,8 +67,8 @@ export function PickerMap({ point, onPick }: PickerMapProps) {
   );
 }
 
-/** Kis, nem mozgatható térkép egyetlen hellyel (adatlapra). */
-export function MiniMap({ place }: { place: Place }) {
+/** Kis, nem mozgatható térkép egyetlen ponttal (hely vagy esemény adatlapjára). */
+export function MiniMap({ place }: { place: Pick<Place, 'lat' | 'lng' | 'status' | 'rating'> }) {
   if (place.lat == null || place.lng == null) return null;
   return (
     <MapView

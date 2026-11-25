@@ -1,25 +1,39 @@
+import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Avatar } from '@/components/avatar';
 import { ThemedText } from '@/components/themed-text';
 import { Accent, Spacing } from '@/constants/theme';
+import { useAuth } from '@/providers/auth-provider';
 
 type Props = {
-  title: string;
-  onAdd?: () => void;
+  /** A jobb oldali gomb felirata (pl. „＋ Új hely”); ha nincs, nincs gomb. */
+  actionLabel?: string;
+  actionAccessibilityLabel?: string;
+  onAction?: () => void;
 };
 
-/** Fül-képernyők fejléce: cím és „+ Új hely” gomb. */
-export function TabHeader({ title, onAdd }: Props) {
+/** Fül-képernyők fejléce: balra a profilgomb, jobbra az opcionális művelet. */
+export function TabHeader({ actionLabel, actionAccessibilityLabel, onAction }: Props) {
+  const { profile } = useAuth();
+  const name = profile?.display_name || profile?.username || '?';
   return (
     <View style={styles.header}>
-      <ThemedText type="subtitle">{title}</ThemedText>
-      {onAdd ? (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Profil"
+        onPress={() => router.push('/profile')}
+        hitSlop={8}
+        style={({ pressed }) => pressed && styles.pressed}>
+        <Avatar name={name} size={38} />
+      </Pressable>
+      {actionLabel && onAction ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Új hely felvétele"
-          onPress={onAdd}
-          style={({ pressed }) => [styles.add, pressed && styles.pressed]}>
-          <ThemedText style={styles.addText}>＋ Új hely</ThemedText>
+          accessibilityLabel={actionAccessibilityLabel ?? actionLabel}
+          onPress={onAction}
+          style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
+          <ThemedText style={styles.actionText}>{actionLabel}</ThemedText>
         </Pressable>
       ) : null}
     </View>
@@ -33,14 +47,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
+    minHeight: 54,
   },
-  add: {
+  action: {
     backgroundColor: Accent,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
   },
-  addText: {
+  actionText: {
     color: '#ffffff',
     fontWeight: 600,
     fontSize: 15,
