@@ -1,11 +1,13 @@
 import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Icon } from '@/components/icon';
 import { MiniMap } from '@/components/place-map';
 import { PlacePhotos } from '@/components/place-photos';
 import { RatingBadge } from '@/components/rating-input';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { cardShadow, Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import type { PlacePhoto } from '@/lib/photos';
 import { PLACE_TYPES, PRICE_LABELS, type Place } from '@/lib/places';
 
@@ -20,13 +22,16 @@ type Props = {
 
 /** Egy hely adatlapja; saját és más felhasználó helyéhez is. */
 export function PlaceDetails({ place, photos = [], subtitle, actions }: Props) {
+  const theme = useTheme();
   const type = PLACE_TYPES[place.type];
   const visited = place.status === 'visited';
 
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <ThemedText style={styles.icon}>{type.icon}</ThemedText>
+        <View style={[styles.icon, { backgroundColor: theme.accentSoft }]}>
+          <Icon name={place.type} size={30} color={theme.onAccentSoft} />
+        </View>
         <ThemedText type="subtitle" style={styles.center}>
           {place.name}
         </ThemedText>
@@ -35,7 +40,12 @@ export function PlaceDetails({ place, photos = [], subtitle, actions }: Props) {
           {visited ? (
             <RatingBadge rating={place.rating} />
           ) : (
-            <ThemedText style={styles.wish}>♡ Kívánságlista</ThemedText>
+            <View style={[styles.wish, { backgroundColor: theme.wishlistSoft }]}>
+              <Icon name="heart" size={12} color={theme.onWishlistSoft} />
+              <ThemedText style={[styles.wishText, { color: theme.onWishlistSoft }]}>
+                Kívánságlista
+              </ThemedText>
+            </View>
           )}
         </View>
         {subtitle ? (
@@ -49,7 +59,7 @@ export function PlaceDetails({ place, photos = [], subtitle, actions }: Props) {
 
       <MiniMap place={place} />
 
-      <ThemedView type="backgroundElement" style={styles.card}>
+      <ThemedView type="backgroundElement" style={[styles.card, cardShadow(theme)]}>
         <Row label="Cím" value={place.address} />
         <Row label="Kerület" value={place.district ? `${place.district}. kerület` : null} />
         <Row label="Konyha" value={place.cuisine} />
@@ -70,7 +80,7 @@ export function PlaceDetails({ place, photos = [], subtitle, actions }: Props) {
       </ThemedView>
 
       {place.notes ? (
-        <ThemedView type="backgroundElement" style={styles.card}>
+        <ThemedView type="backgroundElement" style={[styles.card, cardShadow(theme)]}>
           <ThemedText type="small" themeColor="textSecondary">
             Jegyzet
           </ThemedText>
@@ -106,8 +116,12 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
   },
   icon: {
-    fontSize: 44,
-    lineHeight: 52,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.one,
   },
   center: {
     textAlign: 'center',
@@ -118,12 +132,22 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   wish: {
-    color: '#2F80ED',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: Radius.pill,
+  },
+  wishText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: 700,
   },
   card: {
     gap: Spacing.three,
     padding: Spacing.three,
-    borderRadius: 16,
+    borderRadius: Radius.card,
   },
   row: {
     gap: 2,

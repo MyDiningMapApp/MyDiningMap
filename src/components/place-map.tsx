@@ -24,11 +24,11 @@ export function PlacesMap({ places, onOpenPlace, initialRegion }: PlacesMapProps
             key={p.id}
             coordinate={{ latitude: p.lat!, longitude: p.lng! }}
             pinColor={placeColor(p)}
-            title={`${PLACE_TYPES[p.type].icon} ${p.name}`}
+            title={p.name}
             description={
               p.status === 'wishlist'
-                ? 'Kívánságlista · koppints a részletekért'
-                : `${p.rating != null ? `${p.rating}/10 · ` : ''}koppints a részletekért`
+                ? `${PLACE_TYPES[p.type].label} · kívánságlista · koppints a részletekért`
+                : `${PLACE_TYPES[p.type].label}${p.rating != null ? ` · ${p.rating}/10` : ''} · koppints a részletekért`
             }
             onCalloutPress={() => onOpenPlace(p.id)}
           />

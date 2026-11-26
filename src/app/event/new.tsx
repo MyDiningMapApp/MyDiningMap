@@ -16,7 +16,8 @@ import { FriendSelector } from '@/components/friend-selector';
 import { OptionPicker } from '@/components/option-picker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Accent, Spacing } from '@/constants/theme';
+import { Icon } from '@/components/icon';
+import { cardShadow, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { createEvent, defaultEventTime, type OptionInput } from '@/lib/events';
 import { useEvents } from '@/providers/events-provider';
@@ -59,7 +60,7 @@ export default function NewEventScreen() {
         options={{
           headerLeft: () => (
             <Pressable onPress={() => router.back()} hitSlop={12}>
-              <ThemedText style={{ color: Accent }}>Mégse</ThemedText>
+              <ThemedText style={{ color: theme.accent }}>Mégse</ThemedText>
             </Pressable>
           ),
           headerRight: () =>
@@ -67,7 +68,7 @@ export default function NewEventScreen() {
               <ActivityIndicator />
             ) : (
               <Pressable onPress={save} hitSlop={12}>
-                <ThemedText style={{ color: Accent, fontWeight: 600 }}>Létrehozás</ThemedText>
+                <ThemedText style={{ color: theme.accent, fontWeight: 700 }}>Létrehozás</ThemedText>
               </Pressable>
             ),
         }}
@@ -116,7 +117,11 @@ export default function NewEventScreen() {
             {options.map((o, i) => (
               <View
                 key={`${o.name}-${i}`}
-                style={[styles.option, { backgroundColor: theme.backgroundElement }]}>
+                style={[
+                  styles.option,
+                  { backgroundColor: theme.backgroundElement },
+                  cardShadow(theme),
+                ]}>
                 <View style={styles.flex}>
                   <ThemedText type="smallBold">{o.name}</ThemedText>
                   {o.address || o.district ? (
@@ -131,14 +136,13 @@ export default function NewEventScreen() {
                   onPress={() => setOptions((list) => list.filter((_, j) => j !== i))}
                   hitSlop={8}
                   accessibilityLabel={`${o.name} eltávolítása`}>
-                  <ThemedText themeColor="textSecondary" style={styles.remove}>
-                    ✕
-                  </ThemedText>
+                  <Icon name="close" size={18} color={theme.textSecondary} />
                 </Pressable>
               </View>
             ))}
             <Button
-              title="＋ Hely hozzáadása"
+              title="Hely hozzáadása"
+              icon="add"
               variant="secondary"
               onPress={() => setPickerOpen(true)}
             />
@@ -179,9 +183,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two,
     padding: Spacing.three,
-    borderRadius: 12,
-  },
-  remove: {
-    fontSize: 18,
+    borderRadius: Radius.medium,
   },
 });

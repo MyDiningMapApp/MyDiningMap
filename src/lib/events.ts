@@ -244,6 +244,6 @@ export function responseSummary(
 
 /** Rövid állapotszöveg a listához. */
 export function eventPlaceSummary(e: Pick<EventSummary, 'chosen_place' | 'option_count'>): string {
-  if (e.chosen_place) return `📍 ${e.chosen_place}`;
-  return `🗳️ Szavazás: ${e.option_count} hely`;
+  if (e.chosen_place) return e.chosen_place;
+  return `Szavazás: ${e.option_count} hely`;
 }

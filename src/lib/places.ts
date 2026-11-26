@@ -42,13 +42,14 @@ export type PlaceInput = Pick<
   | 'lng'
 >;
 
-export const PLACE_TYPES: Record<PlaceType, { label: string; icon: string }> = {
-  etterem: { label: 'Étterem', icon: '🍽️' },
-  bar: { label: 'Bár', icon: '🍸' },
-  kocsma: { label: 'Kocsma', icon: '🍺' },
-  kavezo: { label: 'Kávézó', icon: '☕' },
-  pekseg: { label: 'Pékség', icon: '🥐' },
-  cukraszda: { label: 'Cukrászda', icon: '🍰' },
+/** Helytípusok; az ikonjuk az Icon komponensben, a típus kulcsával azonos néven. */
+export const PLACE_TYPES: Record<PlaceType, { label: string }> = {
+  etterem: { label: 'Étterem' },
+  bar: { label: 'Bár' },
+  kocsma: { label: 'Kocsma' },
+  kavezo: { label: 'Kávézó' },
+  pekseg: { label: 'Pékség' },
+  cukraszda: { label: 'Cukrászda' },
 };
 export const PLACE_TYPE_KEYS = Object.keys(PLACE_TYPES) as PlaceType[];
 

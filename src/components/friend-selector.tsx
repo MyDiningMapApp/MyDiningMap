@@ -2,7 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/avatar';
 import { ThemedText } from '@/components/themed-text';
-import { Accent, Spacing } from '@/constants/theme';
+import { Icon } from '@/components/icon';
+import { cardShadow, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { displayName, type Friendship } from '@/lib/social';
 
@@ -42,6 +43,7 @@ export function FriendSelector({ friends, selected, onChange, disabledIds = [] }
             style={({ pressed }) => [
               styles.row,
               { backgroundColor: theme.backgroundElement },
+              cardShadow(theme),
               (pressed || disabled) && styles.dim,
             ]}>
             <Avatar name={displayName(f)} size={32} />
@@ -53,8 +55,13 @@ export function FriendSelector({ friends, selected, onChange, disabledIds = [] }
                 </ThemedText>
               ) : null}
             </View>
-            <View style={[styles.box, checked && styles.boxChecked]}>
-              {checked ? <ThemedText style={styles.check}>✓</ThemedText> : null}
+            <View
+              style={[
+                styles.box,
+                { borderColor: checked ? theme.accent : theme.textSecondary },
+                checked && { backgroundColor: theme.accent },
+              ]}>
+              {checked ? <Icon name="check" size={14} color={theme.onAccent} /> : null}
             </View>
           </Pressable>
         );
@@ -73,7 +80,7 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     padding: Spacing.two,
     paddingRight: Spacing.three,
-    borderRadius: 12,
+    borderRadius: Radius.medium,
   },
   dim: {
     opacity: 0.6,
@@ -86,17 +93,7 @@ const styles = StyleSheet.create({
     height: 26,
     borderRadius: 13,
     borderWidth: 2,
-    borderColor: '#8E8E93',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  boxChecked: {
-    backgroundColor: Accent,
-    borderColor: Accent,
-  },
-  check: {
-    color: '#ffffff',
-    fontWeight: 700,
-    lineHeight: 20,
   },
 });

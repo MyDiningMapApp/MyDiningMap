@@ -1,6 +1,6 @@
-import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
+import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 
-import { Fonts, ThemeColor } from '@/constants/theme';
+import { Fonts, fontFamilyForWeight, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
@@ -8,10 +8,22 @@ export type ThemedTextProps = TextProps & {
   themeColor?: ThemeColor;
 };
 
+/**
+ * Szöveg a téma színeivel és a Plus Jakarta Sans betűtípussal.
+ * A `fontWeight`-et a megfelelő betűváltozatra cseréli (egyedi betűtípusnál ez kell iOS-en).
+ */
 export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
   const theme = useTheme();
-
-  return <Text style={[{ color: theme[themeColor ?? 'text'] }, styles[type], style]} {...rest} />;
+  const flat = StyleSheet.flatten([
+    { color: theme[themeColor ?? 'text'] },
+    styles[type],
+    type === 'linkPrimary' ? { color: theme.accent } : null,
+    style,
+  ]) as TextStyle;
+  const { fontWeight, ...restStyle } = flat;
+  const fontFamily =
+    type === 'code' ? Fonts.mono : (restStyle.fontFamily ?? fontFamilyForWeight(fontWeight));
+  return <Text style={[restStyle, { fontFamily }]} {...rest} />;
 }
 
 const styles = StyleSheet.create({
@@ -31,14 +43,16 @@ const styles = StyleSheet.create({
     fontWeight: 500,
   },
   title: {
-    fontSize: 48,
-    fontWeight: 600,
-    lineHeight: 52,
+    fontSize: 44,
+    fontWeight: 800,
+    lineHeight: 50,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 32,
-    lineHeight: 44,
-    fontWeight: 600,
+    fontSize: 28,
+    lineHeight: 36,
+    fontWeight: 800,
+    letterSpacing: -0.3,
   },
   link: {
     lineHeight: 30,
@@ -47,11 +61,9 @@ const styles = StyleSheet.create({
   linkPrimary: {
     lineHeight: 30,
     fontSize: 14,
-    color: '#3c87f7',
+    fontWeight: 600,
   },
   code: {
-    fontFamily: Fonts.mono,
-    fontWeight: Platform.select({ android: 700 }) ?? 500,
     fontSize: 12,
   },
 });

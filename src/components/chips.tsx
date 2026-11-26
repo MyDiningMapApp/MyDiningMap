@@ -1,19 +1,22 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Icon, type IconName } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
-import { Accent, Spacing } from '@/constants/theme';
+import { cardShadow, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ChipProps = {
   label: string;
   selected?: boolean;
   onPress: () => void;
-  /** Kártyán belül (szürke háttéren) használva, hogy a gomb látszódjon. */
+  icon?: IconName;
+  /** Kártyán belül (fehér háttéren) használva, hogy a gomb látszódjon. */
   onCard?: boolean;
 };
 
-export function Chip({ label, selected, onPress, onCard }: ChipProps) {
+export function Chip({ label, selected, onPress, icon, onCard }: ChipProps) {
   const theme = useTheme();
+  const color = selected ? theme.onAccent : theme.text;
   return (
     <Pressable
       accessibilityRole="button"
@@ -23,21 +26,22 @@ export function Chip({ label, selected, onPress, onCard }: ChipProps) {
         styles.chip,
         {
           backgroundColor: selected
-            ? Accent
+            ? theme.accent
             : onCard
               ? theme.backgroundSelected
               : theme.backgroundElement,
         },
         pressed && styles.pressed,
       ]}>
-      <ThemedText type="small" style={{ color: selected ? '#ffffff' : theme.text }}>
+      {icon ? <Icon name={icon} size={15} color={color} /> : null}
+      <ThemedText type="small" style={{ color, fontWeight: selected ? 700 : 500 }}>
         {label}
       </ThemedText>
     </Pressable>
   );
 }
 
-type Option<T> = { value: T; label: string };
+type Option<T> = { value: T; label: string; icon?: IconName };
 
 type ChipGroupProps<T> = {
   options: Option<T>[];
@@ -48,6 +52,7 @@ type ChipGroupProps<T> = {
   emptyValue?: T;
   /** Vízszintesen görgethető sor (sok elemhez); különben több sorba tördel. */
   scroll?: boolean;
+  onCard?: boolean;
 };
 
 export function ChipGroup<T>({
@@ -57,20 +62,24 @@ export function ChipGroup<T>({
   allowDeselect,
   emptyValue,
   scroll,
+  onCard,
 }: ChipGroupProps<T>) {
   const chips = options.map((o) => (
     <Chip
       key={String(o.value)}
       label={o.label}
+      icon={o.icon}
+      onCard={onCard}
       selected={o.value === value}
-      onPress={() =>
-        onChange(allowDeselect && o.value === value ? (emptyValue as T) : o.value)
-      }
+      onPress={() => onChange(allowDeselect && o.value === value ? (emptyValue as T) : o.value)}
     />
   ));
   if (scroll) {
     return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}>
         {chips}
       </ScrollView>
     );
@@ -82,7 +91,7 @@ type SegmentedProps<T> = {
   options: Option<T>[];
   value: T;
   onChange: (value: T) => void;
-  /** Kártyán belül (szürke háttéren) használva. */
+  /** Kártyán belül (fehér háttéren) használva. */
   onCard?: boolean;
 };
 
@@ -93,7 +102,7 @@ export function Segmented<T>({ options, value, onChange, onCard }: SegmentedProp
     <View
       style={[
         styles.segmented,
-        { backgroundColor: onCard ? theme.backgroundSelected : theme.backgroundElement },
+        { backgroundColor: onCard ? theme.background : theme.backgroundSelected },
       ]}>
       {options.map((o) => {
         const selected = o.value === value;
@@ -103,10 +112,22 @@ export function Segmented<T>({ options, value, onChange, onCard }: SegmentedProp
             accessibilityRole="button"
             accessibilityState={{ selected }}
             onPress={() => onChange(o.value)}
-            style={[styles.segment, selected && { backgroundColor: theme.background }]}>
+            style={[
+              styles.segment,
+              selected && { backgroundColor: theme.backgroundElement },
+              selected && cardShadow(theme),
+            ]}>
+            {o.icon ? (
+              <Icon
+                name={o.icon}
+                size={14}
+                color={selected ? theme.accent : theme.textSecondary}
+              />
+            ) : null}
             <ThemedText
-              type={selected ? 'smallBold' : 'small'}
+              type="small"
               themeColor={selected ? 'text' : 'textSecondary'}
+              style={{ fontWeight: selected ? 700 : 600 }}
               numberOfLines={1}>
               {o.label}
             </ThemedText>
@@ -119,9 +140,12 @@ export function Segmented<T>({ options, value, onChange, onCard }: SegmentedProp
 
 const styles = StyleSheet.create({
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
+    paddingVertical: 9,
+    borderRadius: Radius.small,
   },
   pressed: {
     opacity: 0.7,
@@ -137,13 +161,16 @@ const styles = StyleSheet.create({
   },
   segmented: {
     flexDirection: 'row',
-    borderRadius: 10,
-    padding: 2,
+    borderRadius: Radius.medium,
+    padding: 4,
   },
   segment: {
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 7,
-    borderRadius: 8,
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 9,
+    borderRadius: Radius.small,
   },
 });

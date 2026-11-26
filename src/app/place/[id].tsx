@@ -48,7 +48,8 @@ export default function PlaceDetailsScreen() {
           <>
             {!visited ? (
               <Button
-                title="✓ Voltam itt!"
+                title="Voltam itt!"
+                icon="check"
                 onPress={() =>
                   router.push({
                     pathname: '/place/edit',
@@ -59,12 +60,13 @@ export default function PlaceDetailsScreen() {
             ) : null}
             <Button
               title="Szerkesztés"
+              icon="pencil"
               variant={visited ? 'primary' : 'secondary'}
               onPress={() => router.push({ pathname: '/place/edit', params: { id: place.id } })}
             />
             <Button
               title="Törlés"
-              variant="secondary"
+              variant="danger"
               loading={deleting}
               onPress={() =>
                 confirm('Hely törlése', `Biztosan törlöd: ${place.name}?`, 'Törlés', doDelete)

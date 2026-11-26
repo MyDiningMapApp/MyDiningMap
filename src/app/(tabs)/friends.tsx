@@ -10,6 +10,7 @@ import { TabHeader } from '@/components/tab-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { searchProfile, type ProfileSummary } from '@/lib/social';
 import { normalizeUsername } from '@/lib/username';
 import { useFriends } from '@/providers/friends-provider';
@@ -18,6 +19,7 @@ const openProfile = (username: string) =>
   router.push({ pathname: '/user/[username]', params: { username } });
 
 export default function FriendsScreen() {
+  const theme = useTheme();
   const { friends, incoming, outgoing, loading, error, reload } = useFriends();
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -50,8 +52,7 @@ export default function FriendsScreen() {
     <ThemedView style={styles.flex}>
       <SafeAreaView style={styles.flex} edges={['top']}>
         <TabHeader
-          actionLabel="＋ Új esemény"
-          actionAccessibilityLabel="Új esemény létrehozása"
+          actionLabel="Új esemény létrehozása"
           onAction={() => router.push('/event/new')}
         />
         <ScrollView
@@ -83,7 +84,7 @@ export default function FriendsScreen() {
               A felhasználónevet pontosan kell beírni.
             </ThemedText>
             {searchError ? (
-              <ThemedText type="small" style={styles.error}>
+              <ThemedText type="small" style={[styles.error, { color: theme.danger }]}>
                 {searchError}
               </ThemedText>
             ) : null}
@@ -110,7 +111,7 @@ export default function FriendsScreen() {
           </View>
 
           {error ? (
-            <ThemedText type="small" style={styles.error}>
+            <ThemedText type="small" style={[styles.error, { color: theme.danger }]}>
               {error} Húzd le az oldalt az újrapróbáláshoz.
             </ThemedText>
           ) : null}
@@ -167,6 +168,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   error: {
-    color: '#D93025',
+    fontWeight: 600,
   },
 });

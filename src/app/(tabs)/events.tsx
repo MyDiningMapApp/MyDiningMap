@@ -8,10 +8,12 @@ import { TabHeader } from '@/components/tab-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { splitEvents } from '@/lib/events';
 import { useEvents } from '@/providers/events-provider';
 
 export default function EventsScreen() {
+  const theme = useTheme();
   const { events, loading, error, reload } = useEvents();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -40,8 +42,7 @@ export default function EventsScreen() {
     <ThemedView style={styles.flex}>
       <SafeAreaView style={styles.flex} edges={['top']}>
         <TabHeader
-          actionLabel="＋ Új esemény"
-          actionAccessibilityLabel="Új esemény létrehozása"
+          actionLabel="Új esemény létrehozása"
           onAction={() => router.push('/event/new')}
         />
         <SectionList
@@ -60,7 +61,7 @@ export default function EventsScreen() {
           )}
           ListHeaderComponent={
             error ? (
-              <ThemedText type="small" style={styles.error}>
+              <ThemedText type="small" style={[styles.error, { color: theme.danger }]}>
                 {error} Húzd le a listát az újrapróbáláshoz.
               </ThemedText>
             ) : undefined
@@ -68,7 +69,7 @@ export default function EventsScreen() {
           ListFooterComponent={
             !loading && events.length === 0 ? (
               <ThemedText themeColor="textSecondary" style={styles.empty}>
-                Még nincs eseményed. Hívd meg a barátaidat egy közös vacsorára a „＋ Új esemény”
+                Még nincs eseményed. Hívd meg a barátaidat egy közös vacsorára a jobb felső ＋
                 gombbal!
               </ThemedText>
             ) : undefined
@@ -100,6 +101,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
   },
   error: {
-    color: '#D93025',
+    fontWeight: 600,
   },
 });

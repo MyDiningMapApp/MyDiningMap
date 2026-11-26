@@ -9,7 +9,7 @@ function Placeholder({ text, children }: { text: string; children?: React.ReactN
   return (
     <ThemedView type="backgroundElement" style={styles.box}>
       <ThemedText themeColor="textSecondary" style={styles.center}>
-        🗺️ {text}
+        {text}
       </ThemedText>
       {children}
     </ThemedView>

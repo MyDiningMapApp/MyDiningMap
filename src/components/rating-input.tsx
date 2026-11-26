@@ -1,8 +1,10 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Icon } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
-import { MAX_RATING, placeColor } from '@/lib/places';
+import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { MAX_RATING } from '@/lib/places';
 
 type Props = {
   value: number | null;
@@ -16,7 +18,6 @@ export function RatingInput({ value, onChange }: Props) {
     <View style={styles.row} accessibilityRole="radiogroup" accessibilityLabel="Értékelés">
       {Array.from({ length: MAX_RATING }, (_, i) => i + 1).map((n) => {
         const active = value != null && n <= value;
-        const color = placeColor({ status: 'visited', rating: value });
         return (
           <Pressable
             key={n}
@@ -26,9 +27,10 @@ export function RatingInput({ value, onChange }: Props) {
             onPress={() => onChange(value === n ? null : n)}
             style={[
               styles.cell,
-              { backgroundColor: active ? color : theme.backgroundElement },
+              { backgroundColor: active ? theme.accent : theme.backgroundElement },
             ]}>
-            <ThemedText type="smallBold" style={{ color: active ? '#ffffff' : theme.textSecondary }}>
+            <ThemedText
+              style={[styles.cellText, { color: active ? theme.onAccent : theme.textSecondary }]}>
               {n}
             </ThemedText>
           </Pressable>
@@ -38,14 +40,22 @@ export function RatingInput({ value, onChange }: Props) {
   );
 }
 
-/** Értékelés kiírása, pl. „8/10”. */
+/** Az értékeléshez tartozó halvány színpár (9–10 zöld, 7–8 sárga, alatta piros). */
+export function useRatingColors(rating: number) {
+  const theme = useTheme();
+  if (rating >= 9) return { bg: theme.ratingHighBg, ink: theme.ratingHighInk };
+  if (rating >= 7) return { bg: theme.ratingMidBg, ink: theme.ratingMidInk };
+  return { bg: theme.ratingLowBg, ink: theme.ratingLowInk };
+}
+
+/** Értékelés kiírása, pl. „★ 8/10”. */
 export function RatingBadge({ rating }: { rating: number | null }) {
+  const colors = useRatingColors(rating ?? 0);
   if (rating == null) return null;
   return (
-    <View style={[styles.badge, { backgroundColor: placeColor({ status: 'visited', rating }) }]}>
-      <ThemedText type="smallBold" style={styles.badgeText}>
-        {rating}/10
-      </ThemedText>
+    <View style={[styles.badge, { backgroundColor: colors.bg }]}>
+      <Icon name="star" size={12} color={colors.ink} />
+      <ThemedText style={[styles.badgeText, { color: colors.ink }]}>{rating}/10</ThemedText>
     </View>
   );
 }
@@ -59,16 +69,25 @@ const styles = StyleSheet.create({
     flex: 1,
     aspectRatio: 1,
     maxHeight: 40,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  cellText: {
+    fontSize: 14,
+    fontWeight: 700,
+  },
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: Radius.pill,
   },
   badgeText: {
-    color: '#ffffff',
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: 800,
   },
 });

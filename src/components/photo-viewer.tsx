@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 
@@ -67,7 +68,7 @@ export function PhotoViewer({ uris, index, onClose }: Props) {
             accessibilityRole="button"
             accessibilityLabel="Bezárás"
             style={styles.close}>
-            <ThemedText style={styles.closeText}>✕</ThemedText>
+            <Icon name="close" size={18} color="#ffffff" />
           </Pressable>
         </SafeAreaView>
       </View>
@@ -109,9 +110,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  closeText: {
-    color: '#ffffff',
-    fontSize: 18,
   },
 });

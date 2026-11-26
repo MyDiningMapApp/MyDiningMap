@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/avatar';
+import { Icon } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { cardShadow, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { ProfileSummary } from '@/lib/social';
 
@@ -18,7 +19,7 @@ export function ProfileRow({ profile, onPress, children }: Props) {
   const theme = useTheme();
   const name = profile.display_name?.trim();
   return (
-    <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+    <View style={[styles.card, { backgroundColor: theme.backgroundElement }, cardShadow(theme)]}>
       <Pressable
         onPress={onPress}
         disabled={!onPress}
@@ -33,11 +34,7 @@ export function ProfileRow({ profile, onPress, children }: Props) {
             {profile.visibility === 'public' ? 'Publikus profil' : 'Privát profil'}
           </ThemedText>
         </View>
-        {onPress ? (
-          <ThemedText themeColor="textSecondary" style={styles.chevron}>
-            ›
-          </ThemedText>
-        ) : null}
+        {onPress ? <Icon name="chevron" size={16} color={theme.textSecondary} /> : null}
       </Pressable>
       {children}
     </View>
@@ -48,7 +45,7 @@ const styles = StyleSheet.create({
   card: {
     gap: Spacing.three,
     padding: Spacing.three,
-    borderRadius: 14,
+    borderRadius: Radius.card,
   },
   row: {
     flexDirection: 'row',
@@ -64,8 +61,5 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-  },
-  chevron: {
-    fontSize: 24,
   },
 });

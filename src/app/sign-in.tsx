@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, FormError, TextField } from '@/components/form';
+import { Icon } from '@/components/icon';
 import { FormScreen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { authErrorMessage } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
@@ -13,6 +15,7 @@ const PASSWORD_MIN = 8;
 type Mode = 'signIn' | 'signUp';
 
 export default function SignInScreen() {
+  const theme = useTheme();
   const [mode, setMode] = useState<Mode>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -77,7 +80,9 @@ export default function SignInScreen() {
   return (
     <FormScreen>
       <View style={styles.header}>
-        <ThemedText style={styles.logo}>🍽️</ThemedText>
+        <View style={[styles.logo, { backgroundColor: theme.accent }]}>
+          <Icon name="etterem" size={34} color={theme.onAccent} />
+        </View>
         <ThemedText type="subtitle">MyDiningMap</ThemedText>
         <ThemedText themeColor="textSecondary" style={styles.center}>
           {isSignUp ? 'Hozd létre a fiókodat' : 'Lépj be a fiókodba'}
@@ -142,8 +147,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.three,
   },
   logo: {
-    fontSize: 56,
-    lineHeight: 64,
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.two,
   },
   center: {
     textAlign: 'center',

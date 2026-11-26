@@ -18,7 +18,8 @@ import { OptionPicker } from '@/components/option-picker';
 import { MiniMap } from '@/components/place-map';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Accent, Spacing } from '@/constants/theme';
+import { Icon } from '@/components/icon';
+import { cardShadow, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { confirm, showError } from '@/lib/confirm';
 import {
@@ -30,7 +31,6 @@ import {
   getEvent,
   removeEventOption,
   respondEvent,
-  RESPONSE_ICONS,
   RESPONSE_LABELS,
   setEventVote,
   sortOptions,
@@ -103,7 +103,7 @@ export default function EventScreen() {
         {event === null ? (
           <ThemedText themeColor="textSecondary">Ez az esemény nem található.</ThemedText>
         ) : error ? (
-          <ThemedText style={styles.error}>{error}</ThemedText>
+          <ThemedText style={[styles.error, { color: theme.danger }]}>{error}</ThemedText>
         ) : (
           <ActivityIndicator />
         )}
@@ -195,19 +195,24 @@ export default function EventScreen() {
         {/* Fejléc */}
         <View style={styles.header}>
           {!active ? (
-            <ThemedView style={styles.cancelled}>
-              <ThemedText style={styles.cancelledText}>🚫 Ezt az eseményt lemondták.</ThemedText>
+            <ThemedView style={[styles.cancelled, { backgroundColor: theme.dangerSoft }]}>
+              <ThemedText style={[styles.cancelledText, { color: theme.danger }]}>
+                Ezt az eseményt lemondták.
+              </ThemedText>
             </ThemedView>
           ) : null}
           <ThemedText type="subtitle" style={styles.centerText}>
             {ev.title}
           </ThemedText>
-          <ThemedText style={styles.centerText}>🕒 {formatEventTime(ev.starts_at)}</ThemedText>
+          <View style={styles.timeRow}>
+            <Icon name="clock" size={16} color={theme.accent} />
+            <ThemedText style={styles.time}>{formatEventTime(ev.starts_at)}</ThemedText>
+          </View>
           <ThemedText type="small" themeColor="textSecondary">
             Szervező: {organizer ? 'te' : displayName(ev.organizer)}
           </ThemedText>
           {ev.note ? (
-            <ThemedView type="backgroundElement" style={styles.note}>
+            <ThemedView type="backgroundElement" style={[styles.note, cardShadow(theme)]}>
               <ThemedText>{ev.note}</ThemedText>
             </ThemedView>
           ) : null}
@@ -220,7 +225,7 @@ export default function EventScreen() {
               {(['going', 'maybe', 'declined'] as const).map((r) => (
                 <Chip
                   key={r}
-                  label={`${RESPONSE_ICONS[r]} ${r === 'going' ? 'Jövök' : r === 'maybe' ? 'Talán' : 'Nem jövök'}`}
+                  label={r === 'going' ? 'Jövök' : r === 'maybe' ? 'Talán' : 'Nem jövök'}
                   selected={me.response === r}
                   onPress={() => respond(r)}
                 />
@@ -229,14 +234,15 @@ export default function EventScreen() {
             </View>
             {me.suggested_time ? (
               <ThemedText type="small" themeColor="textSecondary">
-                ⏰ Javasolt időpontod: {formatEventTime(me.suggested_time)}
+                Javasolt időpontod: {formatEventTime(me.suggested_time)}
                 {me.comment ? ` · „${me.comment}”` : ''}
               </ThemedText>
             ) : null}
             <View style={styles.row}>
               <View style={styles.flex}>
                 <Button
-                  title={me.suggested_time ? '✏️ Módosítás' : '⏰ Másik időpontot javaslok'}
+                  title={me.suggested_time ? 'Módosítás' : 'Másik időpontot javaslok'}
+                  icon={me.suggested_time ? 'pencil' : 'clock'}
                   variant="secondary"
                   onPress={() => openPanel('suggest')}
                 />
@@ -255,7 +261,7 @@ export default function EventScreen() {
               ) : null}
             </View>
             {panel === 'suggest' ? (
-              <ThemedView type="backgroundElement" style={styles.panel}>
+              <ThemedView type="backgroundElement" style={[styles.panel, cardShadow(theme)]}>
                 <DateTimeField
                   label="Javasolt időpont"
                   value={suggestTime}
@@ -328,7 +334,8 @@ export default function EventScreen() {
           ))}
           {organizer && active ? (
             <Button
-              title="＋ Hely hozzáadása"
+              title="Hely hozzáadása"
+              icon="add"
               variant="secondary"
               loading={busy === 'add-option'}
               onPress={() => setPickerOpen(true)}
@@ -339,29 +346,29 @@ export default function EventScreen() {
         {/* Résztvevők */}
         <Section
           title={`Résztvevők (${ev.invitees.filter((i) => i.response === 'going').length + 1} jön)`}>
-          <PersonRow name={displayName(ev.organizer)} status="✅ Jön · Szervező" />
+          <PersonRow name={displayName(ev.organizer)} />
           {ev.invitees.map((i) => (
-            <View key={i.id} style={[styles.person, { backgroundColor: theme.backgroundElement }]}>
+            <View
+              key={i.id}
+              style={[styles.person, { backgroundColor: theme.backgroundElement }, cardShadow(theme)]}>
               <View style={styles.personMain}>
                 <Avatar name={displayName(i)} size={32} />
                 <ThemedText type="smallBold" style={styles.flex}>
                   {displayName(i)}
                 </ThemedText>
-                <ThemedText type="small">
-                  {RESPONSE_ICONS[i.response]} {RESPONSE_LABELS[i.response]}
-                </ThemedText>
+                <ResponsePill response={i.response} />
               </View>
               {i.suggested_time ? (
                 <View style={styles.suggestion}>
                   <ThemedText type="small" themeColor="textSecondary">
-                    ⏰ Javasolt időpont: {formatEventTime(i.suggested_time)}
+                    Javasolt időpont: {formatEventTime(i.suggested_time)}
                     {i.comment ? ` · „${i.comment}”` : ''}
                   </ThemedText>
                   {organizer && active ? (
                     <Pressable
                       onPress={() => acceptSuggestion(i.suggested_time!, displayName(i))}
                       hitSlop={6}>
-                      <ThemedText type="small" style={styles.link}>
+                      <ThemedText type="small" style={[styles.link, { color: theme.accent }]}>
                         Elfogadom ezt az időpontot
                       </ThemedText>
                     </Pressable>
@@ -379,9 +386,14 @@ export default function EventScreen() {
         {/* Szervezői műveletek */}
         {organizer && active ? (
           <Section title="Szervezés">
-            <Button title="✏️ Szerkesztés" variant="secondary" onPress={() => openPanel('edit')} />
+            <Button
+              title="Szerkesztés"
+              icon="pencil"
+              variant="secondary"
+              onPress={() => openPanel('edit')}
+            />
             {panel === 'edit' ? (
-              <ThemedView type="backgroundElement" style={styles.panel}>
+              <ThemedView type="backgroundElement" style={[styles.panel, cardShadow(theme)]}>
                 <TextField
                   label="Cím"
                   value={editTitle}
@@ -405,12 +417,13 @@ export default function EventScreen() {
               </ThemedView>
             ) : null}
             <Button
-              title="👥 Barátok meghívása"
+              title="Barátok meghívása"
+              icon="people"
               variant="secondary"
               onPress={() => openPanel('invite')}
             />
             {panel === 'invite' ? (
-              <ThemedView type="backgroundElement" style={styles.panel}>
+              <ThemedView type="backgroundElement" style={[styles.panel, cardShadow(theme)]}>
                 <FriendSelector
                   friends={friends}
                   selected={inviteIds}
@@ -487,19 +500,39 @@ function Section({
   );
 }
 
-function PersonRow({ name, status }: { name: string; status: string }) {
+/** A szervező sora: mindig „Jön”, és szervező címkét kap. */
+function PersonRow({ name }: { name: string }) {
   const theme = useTheme();
   return (
-    <View style={[styles.person, { backgroundColor: theme.backgroundElement }]}>
+    <View style={[styles.person, { backgroundColor: theme.backgroundElement }, cardShadow(theme)]}>
       <View style={styles.personMain}>
         <Avatar name={name} size={32} />
         <ThemedText type="smallBold" style={styles.flex}>
           {name}
         </ThemedText>
-        <ThemedText type="small" style={styles.link}>
-          {status}
+        <ThemedText type="small" style={{ color: theme.accent, fontWeight: 700 }}>
+          Szervező
         </ThemedText>
+        <ResponsePill response="going" />
       </View>
+    </View>
+  );
+}
+
+/** A válasz színes címkéje (Jön / Talán / Nem jön / Még nem válaszolt). */
+function ResponsePill({ response }: { response: EventResponse }) {
+  const theme = useTheme();
+  const colors = {
+    going: { bg: theme.ratingHighBg, ink: theme.ratingHighInk },
+    maybe: { bg: theme.ratingMidBg, ink: theme.ratingMidInk },
+    declined: { bg: theme.ratingLowBg, ink: theme.ratingLowInk },
+    pending: { bg: theme.backgroundSelected, ink: theme.textSecondary },
+  }[response];
+  return (
+    <View style={[styles.pill, { backgroundColor: colors.bg }]}>
+      <ThemedText style={[styles.pillText, { color: colors.ink }]}>
+        {RESPONSE_LABELS[response]}
+      </ThemedText>
     </View>
   );
 }
@@ -532,15 +565,15 @@ function OptionCard({
     <View
       style={[
         styles.option,
-        { backgroundColor: theme.backgroundElement },
-        chosen && styles.optionChosen,
+        { backgroundColor: theme.backgroundElement, borderColor: chosen ? theme.accent : 'transparent' },
+        cardShadow(theme),
       ]}>
       <View style={styles.optionTop}>
         <View style={styles.flex}>
-          <ThemedText type="smallBold">
-            {chosen ? '✓ ' : ''}
-            {option.name}
-          </ThemedText>
+          <View style={styles.optionTitle}>
+            {chosen ? <Icon name="check" size={15} color={theme.accent} /> : null}
+            <ThemedText type="smallBold">{option.name}</ThemedText>
+          </View>
           {option.address || option.district ? (
             <ThemedText type="small" themeColor="textSecondary">
               {[option.address, option.district ? `${option.district}. ker.` : null]
@@ -549,22 +582,21 @@ function OptionCard({
             </ThemedText>
           ) : null}
           <ThemedText type="small" themeColor="textSecondary">
-            🗳️ {option.votes} szavazat
+            {option.votes} szavazat
             {option.voters.length > 0 ? ` (${option.voters.map((v) => `@${v}`).join(', ')})` : ''}
           </ThemedText>
         </View>
         {canRemove ? (
           <Pressable onPress={onRemove} hitSlop={8} accessibilityLabel={`${option.name} törlése`}>
-            <ThemedText themeColor="textSecondary" style={styles.remove}>
-              ✕
-            </ThemedText>
+            <Icon name="close" size={18} color={theme.textSecondary} />
           </Pressable>
         ) : null}
       </View>
       {active ? (
         <View style={styles.row}>
           <Chip
-            label={option.my_vote ? '✓ Szavaztam' : 'Szavazok'}
+            label={option.my_vote ? 'Szavaztam' : 'Szavazok'}
+            icon={option.my_vote ? 'check' : 'vote'}
             selected={option.my_vote}
             onPress={onVote}
             onCard
@@ -607,19 +639,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.one,
   },
+  optionTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   cancelled: {
-    backgroundColor: 'rgba(217, 48, 37, 0.12)',
     padding: Spacing.two,
     borderRadius: 10,
     marginBottom: Spacing.two,
   },
   cancelledText: {
-    color: '#D93025',
+    fontWeight: 700,
   },
   note: {
     alignSelf: 'stretch',
     padding: Spacing.three,
-    borderRadius: 12,
+    borderRadius: Radius.medium,
     marginTop: Spacing.two,
   },
   section: {
@@ -640,13 +676,13 @@ const styles = StyleSheet.create({
   panel: {
     gap: Spacing.three,
     padding: Spacing.three,
-    borderRadius: 14,
+    borderRadius: Radius.card,
   },
   person: {
     gap: Spacing.one,
     padding: Spacing.two,
     paddingHorizontal: Spacing.three,
-    borderRadius: 12,
+    borderRadius: Radius.medium,
   },
   personMain: {
     flexDirection: 'row',
@@ -658,27 +694,37 @@ const styles = StyleSheet.create({
     paddingLeft: 32 + Spacing.three,
   },
   link: {
-    color: Accent,
-    fontWeight: 600,
+    fontWeight: 700,
   },
   option: {
     gap: Spacing.two,
     padding: Spacing.three,
-    borderRadius: 12,
+    borderRadius: Radius.card,
     borderWidth: 2,
-    borderColor: 'transparent',
   },
-  optionChosen: {
-    borderColor: Accent,
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  time: {
+    fontWeight: 600,
   },
   optionTop: {
     flexDirection: 'row',
     gap: Spacing.two,
   },
-  remove: {
-    fontSize: 18,
+  pill: {
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: Radius.pill,
+  },
+  pillText: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: 700,
   },
   error: {
-    color: '#D93025',
+    fontWeight: 600,
   },
 });

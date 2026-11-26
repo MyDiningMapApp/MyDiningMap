@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Icon } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -64,10 +65,10 @@ export function PhotoStrip({ items, size = 96, onPressItem, onRemove, onAdd, add
           style={({ pressed }) => [
             styles.tile,
             styles.add,
-            { width: size, height: size, borderColor: theme.textSecondary },
+            { width: size, height: size, borderColor: theme.accent },
             pressed && styles.pressed,
           ]}>
-          <ThemedText style={styles.addIcon}>＋</ThemedText>
+          <Icon name="add" size={24} color={theme.accent} />
           <ThemedText type="small" themeColor="textSecondary">
             {addLabel ?? 'Fotó'}
           </ThemedText>
@@ -113,10 +114,6 @@ const styles = StyleSheet.create({
   add: {
     borderWidth: 1.5,
     borderStyle: 'dashed',
-  },
-  addIcon: {
-    fontSize: 26,
-    lineHeight: 30,
   },
   pressed: {
     opacity: 0.6,

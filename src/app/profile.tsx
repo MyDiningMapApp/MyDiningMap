@@ -7,7 +7,8 @@ import { Segmented } from '@/components/chips';
 import { Button, FormError, TextField } from '@/components/form';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { BottomTabInset, cardShadow, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { DISPLAY_NAME_MAX, updateOwnProfile } from '@/lib/profile';
 import { normalizeUsername, validateUsername } from '@/lib/username';
 import { useAuth } from '@/providers/auth-provider';
@@ -16,6 +17,7 @@ import { useFriends } from '@/providers/friends-provider';
 type Visibility = 'private' | 'public';
 
 export default function ProfileScreen() {
+  const theme = useTheme();
   const { session, profile, refreshProfile, signOut } = useAuth();
   const { friends } = useFriends();
 
@@ -94,13 +96,12 @@ export default function ProfileScreen() {
             </ThemedText>
           </View>
 
-          <ThemedView type="backgroundElement" style={styles.card}>
+          <ThemedView type="backgroundElement" style={[styles.card, cardShadow(theme)]}>
             <ThemedText type="smallBold">Profil láthatósága</ThemedText>
             <Segmented<Visibility>
-              onCard
               options={[
-                { value: 'private', label: '🔒 Privát' },
-                { value: 'public', label: '🌍 Publikus' },
+                { value: 'private', label: 'Privát', icon: 'lock' },
+                { value: 'public', label: 'Publikus', icon: 'globe' },
               ]}
               value={profile.visibility}
               onChange={changeVisibility}
@@ -114,7 +115,7 @@ export default function ProfileScreen() {
             </ThemedText>
           </ThemedView>
 
-          <ThemedView type="backgroundElement" style={styles.card}>
+          <ThemedView type="backgroundElement" style={[styles.card, cardShadow(theme)]}>
             <ThemedText type="smallBold">Adataim</ThemedText>
             <TextField
               label="Megjelenített név"
@@ -145,7 +146,7 @@ export default function ProfileScreen() {
             <FormError message={error} />
             {saved && !changed ? (
               <ThemedText type="small" themeColor="textSecondary">
-                ✓ Elmentve
+                Elmentve
               </ThemedText>
             ) : null}
             <Button title="Mentés" onPress={saveDetails} loading={saving} disabled={!changed} />
@@ -184,6 +185,6 @@ const styles = StyleSheet.create({
   card: {
     gap: Spacing.three,
     padding: Spacing.three,
-    borderRadius: 16,
+    borderRadius: Radius.card,
   },
 });

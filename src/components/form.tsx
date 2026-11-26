@@ -7,14 +7,15 @@ import {
   type TextInputProps,
 } from 'react-native';
 
+import { Icon, type IconName } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
-import { Accent, Spacing } from '@/constants/theme';
+import { cardShadow, FontFamily, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type TextFieldProps = TextInputProps & {
   label: string;
   error?: string | null;
-  /** Kártyán belül (szürke háttéren) a mező az oldal hátterének színét kapja, hogy látszódjon. */
+  /** Kártyán belül (fehér háttéren) a mező az oldal hátterének színét kapja, hogy látszódjon. */
   onCard?: boolean;
 };
 
@@ -30,14 +31,15 @@ export function TextField({ label, error, onCard, style, ...rest }: TextFieldPro
           {
             color: theme.text,
             backgroundColor: onCard ? theme.background : theme.backgroundElement,
+            borderColor: error ? theme.danger : 'transparent',
           },
-          error ? styles.inputError : null,
+          !onCard && cardShadow(theme),
           style,
         ]}
         {...rest}
       />
       {error ? (
-        <ThemedText type="small" style={styles.errorText}>
+        <ThemedText type="small" style={{ color: theme.danger }}>
           {error}
         </ThemedText>
       ) : null}
@@ -48,15 +50,34 @@ export function TextField({ label, error, onCard, style, ...rest }: TextFieldPro
 type ButtonProps = {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'danger';
+  icon?: IconName;
   loading?: boolean;
   disabled?: boolean;
+  /** Kártyán belül: a másodlagos gomb az oldal hátterének színét kapja. */
+  onCard?: boolean;
 };
 
-export function Button({ title, onPress, variant = 'primary', loading, disabled }: ButtonProps) {
+export function Button({
+  title,
+  onPress,
+  variant = 'primary',
+  icon,
+  loading,
+  disabled,
+  onCard,
+}: ButtonProps) {
   const theme = useTheme();
   const primary = variant === 'primary';
   const inactive = disabled || loading;
+  const color = primary ? theme.onAccent : variant === 'danger' ? theme.danger : theme.text;
+  const background = primary
+    ? theme.accent
+    : variant === 'danger'
+      ? theme.dangerSoft
+      : onCard
+        ? theme.background
+        : theme.backgroundElement;
   return (
     <Pressable
       accessibilityRole="button"
@@ -64,25 +85,28 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled 
       disabled={inactive}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: primary ? Accent : theme.backgroundElement },
+        { backgroundColor: background },
+        primary || (!onCard && variant === 'secondary') ? cardShadow(theme) : null,
         (pressed || inactive) && styles.buttonDimmed,
       ]}>
       {loading ? (
-        <ActivityIndicator color={primary ? '#ffffff' : theme.text} />
+        <ActivityIndicator color={color} />
       ) : (
-        <ThemedText style={{ color: primary ? '#ffffff' : theme.text, fontWeight: 600 }}>
-          {title}
-        </ThemedText>
+        <View style={styles.buttonContent}>
+          {icon ? <Icon name={icon} size={17} color={color} /> : null}
+          <ThemedText style={{ color, fontWeight: 700 }}>{title}</ThemedText>
+        </View>
       )}
     </Pressable>
   );
 }
 
 export function FormError({ message }: { message: string | null }) {
+  const theme = useTheme();
   if (!message) return null;
   return (
-    <View style={styles.formError}>
-      <ThemedText type="small" style={styles.errorText}>
+    <View style={[styles.formError, { backgroundColor: theme.dangerSoft }]}>
+      <ThemedText type="small" style={{ color: theme.danger }}>
         {message}
       </ThemedText>
     </View>
@@ -95,31 +119,30 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 16,
+    fontFamily: FontFamily.regular,
     paddingHorizontal: Spacing.three,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  inputError: {
-    borderColor: '#D93025',
-  },
-  errorText: {
-    color: '#D93025',
+    paddingVertical: 13,
+    borderRadius: Radius.medium,
+    borderWidth: 1.5,
   },
   button: {
-    minHeight: 48,
-    borderRadius: 12,
+    minHeight: 50,
+    borderRadius: Radius.medium,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.three,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
   },
   buttonDimmed: {
     opacity: 0.6,
   },
   formError: {
     padding: Spacing.two,
-    borderRadius: 8,
-    backgroundColor: 'rgba(217, 48, 37, 0.1)',
+    paddingHorizontal: Spacing.three,
+    borderRadius: Radius.small,
   },
 });

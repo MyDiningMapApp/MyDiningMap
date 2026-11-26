@@ -8,11 +8,12 @@ import { LocationPicker } from '@/components/location-picker';
 import { ProfileRow } from '@/components/profile-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Accent, Spacing } from '@/constants/theme';
+import { Icon } from '@/components/icon';
+import { cardShadow, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { OptionInput } from '@/lib/events';
 import { geocodeAddress, type GeocodeResult } from '@/lib/geocode';
-import { districtHint, fold, PLACE_TYPES, type Place } from '@/lib/places';
+import { districtHint, fold, type Place } from '@/lib/places';
 import { displayName, getProfilePlaces, type Friendship } from '@/lib/social';
 import { useFriends } from '@/providers/friends-provider';
 import { usePlaces } from '@/providers/places-provider';
@@ -36,6 +37,7 @@ const fromPlace = (p: Place): OptionInput => ({
 
 /** Javasolt hely kiválasztása eseményhez: saját listáról, barát listájáról, vagy új hely. */
 export function OptionPicker({ visible, onClose, onSelect }: Props) {
+  const theme = useTheme();
   const [source, setSource] = useState<Source>('own');
 
   function select(option: OptionInput) {
@@ -56,7 +58,7 @@ export function OptionPicker({ visible, onClose, onSelect }: Props) {
               Hely javaslása
             </ThemedText>
             <Pressable onPress={onClose} hitSlop={12}>
-              <ThemedText style={{ color: Accent }}>Mégse</ThemedText>
+              <ThemedText style={{ color: theme.accent }}>Mégse</ThemedText>
             </Pressable>
           </View>
           <View style={styles.segment}>
@@ -109,16 +111,19 @@ function PlaceList({
           style={({ pressed }) => [
             styles.placeRow,
             { backgroundColor: theme.backgroundElement },
+            cardShadow(theme),
             pressed && styles.pressed,
           ]}>
-          <ThemedText style={styles.icon}>{PLACE_TYPES[item.type].icon}</ThemedText>
+          <View style={[styles.icon, { backgroundColor: theme.accentSoft }]}>
+            <Icon name={item.type} size={18} color={theme.onAccentSoft} />
+          </View>
           <View style={styles.flex}>
             <ThemedText type="smallBold" numberOfLines={1}>
               {item.name}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
               {[
-                item.status === 'wishlist' ? '♡ kívánságlista' : null,
+                item.status === 'wishlist' ? 'kívánságlista' : null,
                 item.address,
                 item.district ? `${item.district}. ker.` : null,
               ]
@@ -126,7 +131,7 @@ function PlaceList({
                 .join(' · ')}
             </ThemedText>
           </View>
-          <ThemedText style={{ color: Accent }}>＋</ThemedText>
+          <Icon name="add" size={18} color={theme.accent} />
         </Pressable>
       )}
     />
@@ -169,6 +174,7 @@ function OwnPlaces({ onSelect }: { onSelect: (o: OptionInput) => void }) {
 }
 
 function FriendsPlaces({ onSelect }: { onSelect: (o: OptionInput) => void }) {
+  const theme = useTheme();
   const { friends } = useFriends();
   const [friend, setFriend] = useState<Friendship | null>(null);
   const [places, setPlaces] = useState<Place[] | null>(null);
@@ -210,7 +216,7 @@ function FriendsPlaces({ onSelect }: { onSelect: (o: OptionInput) => void }) {
       header={
         <View style={styles.friendHeader}>
           <Pressable onPress={() => setFriend(null)} hitSlop={8}>
-            <ThemedText style={{ color: Accent }}>‹ Barátok</ThemedText>
+            <ThemedText style={{ color: theme.accent }}>‹ Barátok</ThemedText>
           </Pressable>
           <ThemedText type="smallBold">{displayName(friend)} helyei</ThemedText>
           {field}
@@ -284,14 +290,16 @@ function NewPlace({ onSelect }: { onSelect: (o: OptionInput) => void }) {
           <View style={styles.inline}>
             <View style={styles.flex}>
               <Button
-                title="🔍 Cím keresése"
+                title="Cím keresése"
+                icon="search"
                 variant="secondary"
                 onPress={search}
                 loading={searching}
               />
             </View>
             <View style={styles.flex}>
-              <Button title="📍 Térképen" variant="secondary" onPress={() => setPickerOpen(true)} />
+              <Button title="Térképen"
+                icon="pin" variant="secondary" onPress={() => setPickerOpen(true)} />
             </View>
           </View>
           {results ? (
@@ -308,7 +316,7 @@ function NewPlace({ onSelect }: { onSelect: (o: OptionInput) => void }) {
                       setLocation(r);
                       setResults(null);
                     }}>
-                    <ThemedText type="small">📍 {r.label}</ThemedText>
+                    <ThemedText type="small">{r.label}</ThemedText>
                   </Pressable>
                 ))
               )}
@@ -316,7 +324,7 @@ function NewPlace({ onSelect }: { onSelect: (o: OptionInput) => void }) {
           ) : null}
           <ThemedText type="small" themeColor="textSecondary">
             {location
-              ? `✓ Helyszín: ${location.label}`
+              ? `Helyszín: ${location.label}`
               : 'A helyszín nem kötelező, de így térképen is látszik.'}
           </ThemedText>
           <FormError message={error} />
@@ -371,14 +379,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.three,
     padding: Spacing.three,
-    borderRadius: 12,
+    borderRadius: Radius.medium,
   },
   pressed: {
     opacity: 0.7,
   },
   icon: {
-    fontSize: 22,
-    lineHeight: 28,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   friendHeader: {
     gap: Spacing.two,
@@ -393,6 +404,6 @@ const styles = StyleSheet.create({
   results: {
     gap: Spacing.three,
     padding: Spacing.three,
-    borderRadius: 12,
+    borderRadius: Radius.medium,
   },
 });

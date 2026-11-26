@@ -97,8 +97,8 @@ describe('sortOptions és eventPlaceSummary', () => {
   });
 
   it('kiválasztott hely vagy szavazás', () => {
-    expect(eventPlaceSummary({ chosen_place: 'Mori Ramen', option_count: 3 })).toBe('📍 Mori Ramen');
-    expect(eventPlaceSummary({ chosen_place: null, option_count: 3 })).toBe('🗳️ Szavazás: 3 hely');
+    expect(eventPlaceSummary({ chosen_place: 'Mori Ramen', option_count: 3 })).toBe('Mori Ramen');
+    expect(eventPlaceSummary({ chosen_place: null, option_count: 3 })).toBe('Szavazás: 3 hely');
   });
 });
 

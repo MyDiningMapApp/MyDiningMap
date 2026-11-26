@@ -19,7 +19,7 @@ import { PhotoStrip } from '@/components/photo-strip';
 import { RatingInput } from '@/components/rating-input';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Accent, Spacing } from '@/constants/theme';
+import { cardShadow, Spacing } from '@/constants/theme';
 import { useSignedUrls } from '@/hooks/use-signed-urls';
 import { useTheme } from '@/hooks/use-theme';
 import { showError } from '@/lib/confirm';
@@ -193,7 +193,7 @@ export default function EditPlaceScreen() {
           title,
           headerLeft: () => (
             <Pressable onPress={() => router.back()} hitSlop={12}>
-              <ThemedText style={{ color: Accent }}>Mégse</ThemedText>
+              <ThemedText style={{ color: theme.accent }}>Mégse</ThemedText>
             </Pressable>
           ),
           headerRight: () =>
@@ -201,7 +201,7 @@ export default function EditPlaceScreen() {
               <ActivityIndicator />
             ) : (
               <Pressable onPress={save} hitSlop={12}>
-                <ThemedText style={{ color: Accent, fontWeight: 600 }}>Mentés</ThemedText>
+                <ThemedText style={{ color: theme.accent, fontWeight: 700 }}>Mentés</ThemedText>
               </Pressable>
             ),
         }}
@@ -215,8 +215,8 @@ export default function EditPlaceScreen() {
           keyboardShouldPersistTaps="handled">
           <Segmented<PlaceStatus>
             options={[
-              { value: 'visited', label: '✓ Kipróbáltam' },
-              { value: 'wishlist', label: '♡ Kívánságlista' },
+              { value: 'visited', label: 'Kipróbáltam', icon: 'check' },
+              { value: 'wishlist', label: 'Kívánságlista', icon: 'heart' },
             ]}
             value={draft.status}
             onChange={(v) => set({ status: v })}
@@ -234,7 +234,8 @@ export default function EditPlaceScreen() {
             <ChipGroup
               options={PLACE_TYPE_KEYS.map((k) => ({
                 value: k,
-                label: `${PLACE_TYPES[k].icon} ${PLACE_TYPES[k].label}`,
+                label: PLACE_TYPES[k].label,
+                icon: k,
               }))}
               value={draft.type}
               onChange={(v) => set({ type: v })}
@@ -260,7 +261,8 @@ export default function EditPlaceScreen() {
             <View style={styles.inline}>
               <View style={styles.flex}>
                 <Button
-                  title="🔍 Cím keresése"
+                  title="Cím keresése"
+                  icon="search"
                   variant="secondary"
                   onPress={searchAddress}
                   loading={searching}
@@ -268,7 +270,8 @@ export default function EditPlaceScreen() {
               </View>
               <View style={styles.flex}>
                 <Button
-                  title="📍 Térképen"
+                  title="Térképen"
+                  icon="pin"
                   variant="secondary"
                   onPress={() => {
                     setResults(null);
@@ -279,7 +282,12 @@ export default function EditPlaceScreen() {
             </View>
 
             {results ? (
-              <View style={[styles.results, { backgroundColor: theme.backgroundElement }]}>
+              <View
+                style={[
+                  styles.results,
+                  { backgroundColor: theme.backgroundElement },
+                  cardShadow(theme),
+                ]}>
                 {results.length === 0 ? (
                   <ThemedText type="small" themeColor="textSecondary">
                     Nincs találat. Próbáld pontosabban, vagy jelöld ki a térképen.
@@ -291,10 +299,10 @@ export default function EditPlaceScreen() {
                       const mismatch = !!hint && !!r.district && r.district !== hint;
                       return (
                         <Pressable key={`${r.lat},${r.lng},${i}`} onPress={() => applyLocation(r)}>
-                          <ThemedText type="small">📍 {r.label}</ThemedText>
+                          <ThemedText type="small">{r.label}</ThemedText>
                           {mismatch ? (
-                            <ThemedText type="small" style={styles.warning}>
-                              ⚠️ Ez nem a megadott kerületben ({hint}.) van.
+                            <ThemedText type="small" style={[styles.warning, { color: theme.ratingMidInk }]}>
+                              Figyelem: ez nem a megadott kerületben ({hint}.) van.
                             </ThemedText>
                           ) : null}
                         </Pressable>
@@ -311,7 +319,7 @@ export default function EditPlaceScreen() {
 
             <ThemedText type="small" themeColor="textSecondary">
               {draft.lat != null
-                ? '✓ Helyszín megadva, megjelenik a térképen.'
+                ? 'Helyszín megadva, megjelenik a térképen.'
                 : 'Még nincs helyszín: keresd meg a címet, vagy jelöld ki a térképen.'}
             </ThemedText>
           </Section>
@@ -366,7 +374,7 @@ export default function EditPlaceScreen() {
                 <Switch
                   value={draft.wouldReturn}
                   onValueChange={(v) => set({ wouldReturn: v })}
-                  trackColor={{ true: Accent }}
+                  trackColor={{ true: theme.accent }}
                 />
               </View>
             </>
@@ -471,7 +479,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   warning: {
-    color: '#B26A00',
+    fontWeight: 700,
   },
   progress: {
     textAlign: 'center',

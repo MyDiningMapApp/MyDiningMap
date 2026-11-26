@@ -1,9 +1,9 @@
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { RatingBadge } from '@/components/rating-input';
+import { Icon } from '@/components/icon';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { cardShadow, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { PLACE_TYPES, PRICE_LABELS, type Place } from '@/lib/places';
 
@@ -16,8 +16,12 @@ type Props = {
   hasPhoto?: boolean;
 };
 
+const THUMB = 76;
+
+/** Egy hely kártyája a listákban: nagy fotó (vagy típus-ikon), rajta az értékelés. */
 export function PlaceRow({ place, onPress, thumbUri, hasPhoto }: Props) {
   const theme = useTheme();
+  const visited = place.status === 'visited';
   const meta = [
     PLACE_TYPES[place.type].label,
     place.cuisine,
@@ -30,43 +34,52 @@ export function PlaceRow({ place, onPress, thumbUri, hasPhoto }: Props) {
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${place.name}, ${meta}${visited && place.rating ? `, ${place.rating} pont` : ''}`}
       style={({ pressed }) => [
-        styles.row,
+        styles.card,
         { backgroundColor: theme.backgroundElement },
+        cardShadow(theme),
         pressed && styles.pressed,
       ]}>
-      {thumbUri || hasPhoto ? (
-        <View style={[styles.thumb, { backgroundColor: theme.backgroundSelected }]}>
-          {thumbUri ? (
-            <Image source={{ uri: thumbUri }} style={styles.thumbImage} contentFit="cover" transition={150} />
-          ) : null}
-        </View>
-      ) : (
-        <View style={styles.thumb}>
-          <ThemedText style={styles.icon}>{PLACE_TYPES[place.type].icon}</ThemedText>
-        </View>
-      )}
+      <View style={[styles.thumb, { backgroundColor: theme.accentSoft }]}>
+        {thumbUri ? (
+          <Image source={{ uri: thumbUri }} style={styles.image} contentFit="cover" transition={150} />
+        ) : hasPhoto ? null : (
+          <Icon name={place.type} size={28} color={theme.onAccentSoft} />
+        )}
+        {visited && place.rating != null ? (
+          <View style={[styles.badge, { backgroundColor: theme.backgroundElement }]}>
+            <Icon name="star" size={11} color={theme.accent} />
+            <ThemedText style={[styles.badgeText, { color: theme.text }]}>{place.rating}</ThemedText>
+          </View>
+        ) : null}
+        {!visited ? (
+          <View style={[styles.badge, { backgroundColor: theme.backgroundElement }]}>
+            <Icon name="heart" size={11} color={theme.wishlist} />
+          </View>
+        ) : null}
+      </View>
       <View style={styles.body}>
-        <View style={styles.titleRow}>
-          <ThemedText type="smallBold" style={styles.name} numberOfLines={1}>
-            {place.name}
-          </ThemedText>
-          {place.status === 'visited' ? (
-            <RatingBadge rating={place.rating} />
-          ) : (
-            <ThemedText type="small" style={styles.wish}>
-              ♡
-            </ThemedText>
-          )}
-        </View>
+        <ThemedText style={styles.name} numberOfLines={1}>
+          {place.name}
+        </ThemedText>
         <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
           {meta}
-          {place.status === 'visited' && place.would_return ? '  ↺ visszamennék' : ''}
         </ThemedText>
+        {visited && place.would_return ? (
+          <View style={styles.tag}>
+            <Icon name="again" size={12} color={theme.accent} />
+            <ThemedText style={[styles.tagText, { color: theme.accent }]}>Visszamennék</ThemedText>
+          </View>
+        ) : null}
         {place.lat == null ? (
-          <ThemedText type="small" themeColor="textSecondary">
-            📍 nincs helyszín megadva
-          </ThemedText>
+          <View style={styles.tag}>
+            <Icon name="pin" size={12} color={theme.textSecondary} />
+            <ThemedText style={[styles.tagText, { color: theme.textSecondary }]}>
+              Nincs helyszín megadva
+            </ThemedText>
+          </View>
         ) : null}
       </View>
     </Pressable>
@@ -74,47 +87,60 @@ export function PlaceRow({ place, onPress, thumbUri, hasPhoto }: Props) {
 }
 
 const styles = StyleSheet.create({
-  row: {
+  card: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: 14,
+    gap: Spacing.three - 2,
+    padding: 10,
+    borderRadius: Radius.card,
   },
   pressed: {
-    opacity: 0.7,
-  },
-  icon: {
-    fontSize: 26,
-    lineHeight: 32,
+    opacity: 0.75,
   },
   thumb: {
-    width: 48,
-    height: 48,
-    borderRadius: 10,
+    width: THUMB,
+    height: THUMB,
+    borderRadius: Radius.medium,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  thumbImage: {
-    width: '100%',
-    height: '100%',
+  image: {
+    ...StyleSheet.absoluteFill,
+  },
+  badge: {
+    position: 'absolute',
+    left: 6,
+    bottom: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  badgeText: {
+    fontSize: 12,
+    lineHeight: 15,
+    fontWeight: 800,
   },
   body: {
     flex: 1,
-    gap: 2,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
+    gap: 3,
   },
   name: {
-    flex: 1,
     fontSize: 16,
+    lineHeight: 21,
+    fontWeight: 700,
   },
-  wish: {
-    color: '#2F80ED',
-    fontSize: 18,
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  tagText: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: 700,
   },
 });

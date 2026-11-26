@@ -1,21 +1,28 @@
 import { NativeTabs } from 'expo-router/native-tabs';
-import { useColorScheme } from 'react-native';
 
-import { Colors } from '@/constants/theme';
+import { FontFamily } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useEvents } from '@/providers/events-provider';
 import { useFriends } from '@/providers/friends-provider';
 
+/**
+ * Alsó fülsor: az iOS saját menüje (iOS 26-tól lebegő „üveg” sáv), Menta színekkel.
+ */
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const theme = useTheme();
   const { incoming } = useFriends();
   const { pendingCount } = useEvents();
 
   return (
     <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      backgroundColor={theme.backgroundElement}
+      tintColor={theme.accent}
+      iconColor={{ default: theme.textSecondary, selected: theme.accent }}
+      labelStyle={{
+        default: { color: theme.textSecondary, fontFamily: FontFamily.medium },
+        selected: { color: theme.accent, fontFamily: FontFamily.bold },
+      }}
+      indicatorColor={theme.accentSoft}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Térkép</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'map', selected: 'map.fill' }} md="map" />

@@ -39,7 +39,8 @@ export function RelationshipButton({ profile, relationship, onChange }: Props) {
     case 'none':
       return (
         <Button
-          title="＋ Bejelölés"
+          title="Bejelölés"
+          icon="add"
           loading={busy === 'send'}
           onPress={() => run('send', () => send(profile.id))}
         />
@@ -82,7 +83,8 @@ export function RelationshipButton({ profile, relationship, onChange }: Props) {
     case 'friends':
       return (
         <Button
-          title="✓ Barátok"
+          title="Barátok"
+          icon="check"
           variant="secondary"
           loading={busy === 'remove'}
           onPress={() =>

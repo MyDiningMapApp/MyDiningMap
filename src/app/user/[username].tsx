@@ -9,6 +9,7 @@ import { RelationshipButton } from '@/components/relationship-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useSignedUrls } from '@/hooks/use-signed-urls';
 import { fetchProfilePhotos, firstThumbPaths, type PlacePhoto } from '@/lib/photos';
 import type { Place, PlaceStatus } from '@/lib/places';
@@ -23,6 +24,7 @@ import {
 
 /** Más felhasználó profilja és – ha látható – a helyei. */
 export default function UserProfileScreen() {
+  const theme = useTheme();
   const { username } = useLocalSearchParams<{ username: string }>();
   const [profile, setProfile] = useState<ProfileSummary | null | undefined>(undefined);
   const [places, setPlaces] = useState<Place[]>([]);
@@ -75,7 +77,7 @@ export default function UserProfileScreen() {
     return (
       <ThemedView style={styles.center}>
         <Stack.Screen options={{ title: `@${username}` }} />
-        {error ? <ThemedText style={styles.error}>{error}</ThemedText> : <ActivityIndicator />}
+        {error ? <ThemedText style={[styles.error, { color: theme.danger }]}>{error}</ThemedText> : <ActivityIndicator />}
       </ThemedView>
     );
   }
@@ -112,7 +114,8 @@ export default function UserProfileScreen() {
             { value: 'visited', label: `Kipróbált (${counts.visited})` },
             {
               value: 'wishlist',
-              label: `♡ Kívánságlista (${counts.wishlist})`,
+              label: `Kívánságlista ${counts.wishlist}`,
+              icon: 'heart',
             },
           ]}
           value={status}
@@ -121,7 +124,7 @@ export default function UserProfileScreen() {
       ) : (
         <ThemedView type="backgroundElement" style={styles.notice}>
           <ThemedText style={styles.centerText}>
-            🔒 Ez a profil privát.{' '}
+            Ez a profil privát.{' '}
             {profile.relationship === 'outgoing'
               ? 'Ha elfogadja a jelölésedet, látni fogod a helyeit.'
               : profile.relationship === 'incoming'
@@ -130,7 +133,7 @@ export default function UserProfileScreen() {
           </ThemedText>
         </ThemedView>
       )}
-      {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
+      {error ? <ThemedText style={[styles.error, { color: theme.danger }]}>{error}</ThemedText> : null}
     </View>
   );
 
@@ -201,6 +204,6 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.six,
   },
   error: {
-    color: '#D93025',
+    fontWeight: 600,
   },
 });

@@ -2,19 +2,20 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/avatar';
-import { ThemedText } from '@/components/themed-text';
-import { Accent, Spacing } from '@/constants/theme';
+import { Icon } from '@/components/icon';
+import { cardShadow, Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/providers/auth-provider';
 
 type Props = {
-  /** A jobb oldali gomb felirata (pl. „＋ Új hely”); ha nincs, nincs gomb. */
+  /** A jobb oldali ＋ gomb képernyőolvasós felirata (pl. „Új hely felvétele”); ha nincs, nincs gomb. */
   actionLabel?: string;
-  actionAccessibilityLabel?: string;
   onAction?: () => void;
 };
 
-/** Fül-képernyők fejléce: balra a profilgomb, jobbra az opcionális művelet. */
-export function TabHeader({ actionLabel, actionAccessibilityLabel, onAction }: Props) {
+/** Fül-képernyők fejléce: balra a profilgomb, jobbra a kompakt ＋ gomb. */
+export function TabHeader({ actionLabel, onAction }: Props) {
+  const theme = useTheme();
   const { profile } = useAuth();
   const name = profile?.display_name || profile?.username || '?';
   return (
@@ -25,15 +26,20 @@ export function TabHeader({ actionLabel, actionAccessibilityLabel, onAction }: P
         onPress={() => router.push('/profile')}
         hitSlop={8}
         style={({ pressed }) => pressed && styles.pressed}>
-        <Avatar name={name} size={38} />
+        <Avatar name={name} size={44} />
       </Pressable>
       {actionLabel && onAction ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={actionAccessibilityLabel ?? actionLabel}
+          accessibilityLabel={actionLabel}
           onPress={onAction}
-          style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
-          <ThemedText style={styles.actionText}>{actionLabel}</ThemedText>
+          style={({ pressed }) => [
+            styles.action,
+            { backgroundColor: theme.accent },
+            cardShadow(theme, 'raised'),
+            pressed && styles.pressed,
+          ]}>
+          <Icon name="add" size={20} color={theme.onAccent} />
         </Pressable>
       ) : null}
     </View>
@@ -45,20 +51,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    minHeight: 54,
+    paddingHorizontal: Spacing.three + 4,
+    paddingTop: Spacing.two,
+    paddingBottom: Spacing.two,
+    minHeight: 60,
   },
   action: {
-    backgroundColor: Accent,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-  },
-  actionText: {
-    color: '#ffffff',
-    fontWeight: 600,
-    fontSize: 15,
+    width: 44,
+    height: 44,
+    borderRadius: Radius.small + 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pressed: {
     opacity: 0.7,

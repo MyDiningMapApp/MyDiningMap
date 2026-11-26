@@ -23,8 +23,7 @@ export default function MapScreen() {
     <ThemedView style={styles.flex}>
       <SafeAreaView style={styles.flex} edges={['top']}>
         <TabHeader
-          actionLabel="＋ Új hely"
-          actionAccessibilityLabel="Új hely felvétele"
+          actionLabel="Új hely felvétele"
           onAction={() =>
             router.push({
               pathname: '/place/edit',
@@ -37,7 +36,7 @@ export default function MapScreen() {
             options={[
               { value: 'all', label: 'Mind' },
               { value: 'visited', label: 'Kipróbált' },
-              { value: 'wishlist', label: '♡ Kívánságlista' },
+              { value: 'wishlist', label: 'Kívánságlista', icon: 'heart' },
             ]}
             value={status}
             onChange={setStatus}

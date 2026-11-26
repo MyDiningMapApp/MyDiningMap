@@ -9,7 +9,8 @@ import { PlaceRow } from '@/components/place-row';
 import { TabHeader } from '@/components/tab-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Accent, BottomTabInset, Spacing } from '@/constants/theme';
+import { BottomTabInset, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useSignedUrls } from '@/hooks/use-signed-urls';
 import { firstThumbPaths } from '@/lib/photos';
 import {
@@ -25,6 +26,7 @@ import {
 import { usePlaces } from '@/providers/places-provider';
 
 export default function PlacesScreen() {
+  const theme = useTheme();
   const { places, loading, error, reload, photosByPlace } = usePlaces();
   const thumbPaths = useMemo(() => firstThumbPaths(photosByPlace), [photosByPlace]);
   const thumbUrls = useSignedUrls(Object.values(thumbPaths));
@@ -61,8 +63,7 @@ export default function PlacesScreen() {
     <ThemedView style={styles.flex}>
       <SafeAreaView style={styles.flex} edges={['top']}>
         <TabHeader
-          actionLabel="＋ Új hely"
-          actionAccessibilityLabel="Új hely felvétele"
+          actionLabel="Új hely felvétele"
           onAction={() => router.push({ pathname: '/place/edit', params: { status } })}
         />
         <FlatList
@@ -83,8 +84,8 @@ export default function PlacesScreen() {
             <View style={styles.filters}>
               <Segmented<PlaceStatus>
                 options={[
-                  { value: 'visited', label: `Kipróbált (${counts.visited})` },
-                  { value: 'wishlist', label: `♡ Kívánságlista (${counts.wishlist})` },
+                  { value: 'visited', label: `Kipróbált ${counts.visited}`, icon: 'check' },
+                  { value: 'wishlist', label: `Kívánságlista ${counts.wishlist}`, icon: 'heart' },
                 ]}
                 value={status}
                 onChange={(v) =>
@@ -107,7 +108,8 @@ export default function PlacesScreen() {
                 onChange={(v) => set({ type: v })}
                 options={PLACE_TYPE_KEYS.map((k) => ({
                   value: k,
-                  label: `${PLACE_TYPES[k].icon} ${PLACE_TYPES[k].label}`,
+                  label: PLACE_TYPES[k].label,
+                  icon: k,
                 }))}
               />
               {cuisines.length > 0 ? (
@@ -126,12 +128,12 @@ export default function PlacesScreen() {
                   <Switch
                     value={filters.onlyWouldReturn}
                     onValueChange={(v) => set({ onlyWouldReturn: v })}
-                    trackColor={{ true: Accent }}
+                    trackColor={{ true: theme.accent }}
                   />
                 </View>
               ) : null}
               {error ? (
-                <ThemedText type="small" style={styles.error}>
+                <ThemedText type="small" style={[styles.error, { color: theme.danger }]}>
                   {error} Húzd le a listát az újrapróbáláshoz.
                 </ThemedText>
               ) : null}
@@ -143,7 +145,7 @@ export default function PlacesScreen() {
                 {hasFilters
                   ? 'Nincs a szűrésnek megfelelő hely.'
                   : status === 'visited'
-                    ? 'Még nincs kipróbált helyed. Vegyél fel egyet a „＋ Új hely” gombbal!'
+                    ? 'Még nincs kipróbált helyed. Vegyél fel egyet a jobb felső ＋ gombbal!'
                     : 'A kívánságlistád üres. Ide azokat a helyeket veheted fel, ahová még el szeretnél menni.'}
               </ThemedText>
             )
@@ -178,6 +180,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
   },
   error: {
-    color: '#D93025',
+    fontWeight: 600,
   },
 });
