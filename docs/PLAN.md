@@ -58,6 +58,16 @@ megnézhetik a barátaik listáit, és közös programot szervezhetnek.
 - Jobb felső sarok: Térkép és Helyek fülön „＋ Új hely”, Barátok és Események fülön „＋ Új esemény”.
 - Számláló: a Barátok fülön az új jelölések, az Események fülön a megválaszolatlan meghívók száma.
 
+### Helykeresés név alapján (Apple térképadatok) – későbbi fázis
+- Új hely felvételekor és esemény helyjavaslatánál a **hely nevét** gépelve (pl. „Mori Ramen”) az Apple
+  helykeresője (MapKit Local Search) javaslatokat ad.
+- Kiválasztáskor automatikusan kitölti: **név, cím (utca, házszám), irányítószám → kerület, koordináta**,
+  és ha elérhető, a **típust** és a **weboldalt**.
+- Akkor is működik, ha a helyet még senki nem mentette el. A mostani címkeresés és térképes kijelölés megmarad.
+- Értékelést, véleményeket, fotókat az Apple nem ad ki: ezeket továbbra is a felhasználó adja meg.
+- Feltétel: saját fejlesztői build (az Expo Go-ban nem fut) és Apple Developer fiók; ezért a push-értesítésekkel
+  egy körben készül. Javasolt megoldás: a telefon saját keresője natív modulon át (nincs kulcs, nincs korlát).
+
 ### Push-értesítések
 Külön lépésben, az események után (saját fejlesztői build és Apple Developer fiók kell hozzá).
 Addig az appon belül számláló jelzi az új barátjelöléseket.
@@ -114,7 +124,8 @@ Minden szakasz végén kipróbálható verzió lesz a telefonon.
    térkép és lista, kívánságlista, szűrők, a korábbi webapp 46 helyének áttöltése.
 2. **Közösségi rész:** láthatóság, felhasználónév-keresés, barátjelölés, barátok és publikus profilok listáinak megtekintése.
 3. **Események:** létrehozás, meghívás, helyszavazás, visszajelzés, időpont-javaslat.
-3b. **Push-értesítések** (barátjelölés, eseménymeghívó) – fejlesztői build, Apple Developer fiók.
+3b. **Push-értesítések** (barátjelölés, eseménymeghívó) és **helykeresés név alapján** (Apple térképadatok,
+    cím automatikus kitöltése) – saját fejlesztői build, Apple Developer fiók.
 4. **Kiadás:** ikon, indítóképernyő, adatvédelmi tájékoztató, fióktörlés, TestFlight, App Store-beküldés.
 
 ## 6. Amire szükség lesz tőled
